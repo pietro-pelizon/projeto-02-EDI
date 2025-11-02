@@ -1,8 +1,9 @@
 #ifndef RETANGULO_H
 #define RETANGULO_H
+#include "lista.h"
 
 
- /* ------- TAD RETANGULO -------
+ /* ------- TAD RETÂNGULO -------
  * O Retângulo é um objeto, que contém os seguintes atributos:
  * Identificador: Permite diferenciar os retângulos uns dos outros pelo ID;
  * Âncora: Define a posição de referência do retângulo no cenário,
@@ -112,5 +113,10 @@ double calcAreaRetangulo(retangulo *r);
 /// @brief: Libera o retângulo da memória.
 /// @param r: Ponteiro para o retângulo a ser liberado.
 void destrutorRetangulo(retangulo *r);
+
+/// @brief Transforma o retângulo nas linhas de sua borda
+/// @param r Ponteiro para o retângulo
+/// @return Uma lista com os anteparos inseridos
+lista *retangulo_anteparo(retangulo *r);
 
 #endif //RETANGULO_H

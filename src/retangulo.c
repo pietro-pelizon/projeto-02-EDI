@@ -1,7 +1,10 @@
 #include "retangulo.h"
+#include "lista.h"
 #include <stdlib.h>
 #include <stdio.h>
 #include <string.h>
+
+#include "linha.h"
 
 typedef struct stRetangulo {
 	int i;
@@ -134,6 +137,26 @@ void destrutorRetangulo(retangulo *r) {
 	free(r -> corp);
 	free(r);
 
+}
+
+lista *retangulo_anteparo(retangulo *r) {
+    if (r == NULL) return NULL;
+
+    static int id_anteparo = 2000;
+    lista *anteparos = init_lista();
+
+    linha *lados[4] = {
+        criaLinha(id_anteparo++, r->x, r->y, r->x + r->w, r->y, getCorbRetangulo(r), false),
+        criaLinha(id_anteparo++, r->x, r->y, r->x, r->y + r->h, getCorbRetangulo(r), false),
+        criaLinha(id_anteparo++, r->x + r->w, r->y, r->x + r->w, r->y + r->h, getCorbRetangulo(r), false),
+        criaLinha(id_anteparo++, r->x, r->y + r->h, r->x + r->w, r->y + r->h, getCorbRetangulo(r), false)
+    };
+
+    for (int i = 0; i < 4; i++) {
+        insert_tail(anteparos, lados[i]);
+    }
+
+    return anteparos;
 }
 
 
