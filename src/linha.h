@@ -119,4 +119,9 @@ double calcAreaLinha(linha *l);
 /// @param l: Ponteiro duplo para a linha a ser liberada.
 void destrutorLinha(linha *l);
 
+/// @brief Faz uma cópia da linha
+/// @param original Linha original
+/// @return Retorna um ponteiro para o para a cópia
+linha* copia_linha(linha *original);
+
 #endif //LINHA_H

@@ -143,3 +143,28 @@ void destrutorLinha(linha *l) {
 
 }
 
+linha *copia_linha(linha *original) {
+    if (original == NULL) {
+        return NULL;
+    }
+
+    linha *copia = malloc(sizeof(linha));
+    if (copia == NULL) {
+        return NULL;
+    }
+
+    copia -> x1 = original -> x1;
+    copia -> y1 = original -> y1;
+    copia -> x2 = original -> x2;
+    copia -> y2 = original -> y2;
+
+    copia -> cor = malloc(strlen(original -> cor) + 1);
+    if (copia -> cor == NULL) {
+        free(copia);
+        return NULL;
+    }
+    strcpy(copia->cor, original -> cor);
+
+    return copia;
+}
+
