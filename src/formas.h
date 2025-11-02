@@ -28,7 +28,8 @@ typedef enum EnumtipoForma {
     CIRCULO,
     RETANGULO,
     LINHA,
-    TEXTO
+    TEXTO,
+    ANTEPARO
 } tipoForma;
 
 
@@ -135,5 +136,11 @@ double getXForma(forma *f);
 /// @param f: Ponteiro para a forma genérica.
 /// @return: O valor da coordenada Y. Retorna 0.0 se a forma for nula ou inválida.
 double getYForma(forma *f);
+
+/// @brief Transforma uma forma genérica já transformada em um anteparo
+/// @param f Ponteiro para a forma
+/// @param orientacao Orientação da linha do círculo
+/// @return Retorna uma lista com o anteparo criado.
+lista *forma_anteparo(forma *f, char orientacao);
 
 #endif //FORMAS_H

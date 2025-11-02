@@ -1,5 +1,6 @@
 #include <stdio.h>
 
+#include "lista.h"
 #include "formas.h"
 #include "circulo.h"
 #include <stdlib.h>
@@ -45,6 +46,10 @@ void setIDforma(forma *f, int novoID) {
 	f -> id = novoID;
 }
 
+void set_tipo(forma *f, tipoForma novo) {
+	f -> tipo = novo;
+}
+
 char *getCorbForma(forma *f) {
 	tipoForma tipo = getTipoForma(f);
 	void *dados = getFormaDados(f);
@@ -52,16 +57,15 @@ char *getCorbForma(forma *f) {
 	switch (tipo) {
 		case CIRCULO: return getCorbCirculo(dados);
 		case RETANGULO: return getCorbRetangulo(dados);
-		case LINHA: return getCorLinha(dados);
+		case LINHA:
+		case ANTEPARO: return getCorLinha(dados);
 		case TEXTO: return getCorbTexto(dados);
 		default: return NULL;
 	}
 }
 
 char *getCorpForma(forma *f) {
-	if (f == NULL) {
-		return NULL;
-	}
+	if (f == NULL) return NULL;
 
 	tipoForma tipo = getTipoForma(f);
 	void *dados = getFormaDados(f);
@@ -77,9 +81,7 @@ char *getCorpForma(forma *f) {
 }
 
 void setCorpFormas(forma *f, char *novaCor) {
-	if (f == NULL || novaCor == NULL) {
-		return;
-	}
+	if (f == NULL || novaCor == NULL) return;
 
 	tipoForma tipo = getTipoForma(f);
 	void *dados = getFormaDados(f);
@@ -94,9 +96,7 @@ void setCorpFormas(forma *f, char *novaCor) {
 }
 
 void setCorbFormas(forma *f, char *novaCor) {
-	if (f == NULL || novaCor == NULL) {
-		return;
-	}
+	if (f == NULL || novaCor == NULL) return;
 
 	tipoForma tipo = getTipoForma(f);
 	void *dados = getFormaDados(f);
@@ -181,16 +181,13 @@ forma *clonarForma(forma *f_original) {
 }
 
 void alterna_cores_forma(forma *f) {
-	if (f == NULL) {
-		return;
-	}
+	if (f == NULL) return;
+
 
 	char *cor_borda = getCorbForma(f);
 	char *cor_preenchimento = getCorpForma(f);
 
-	if (cor_borda == NULL || cor_preenchimento == NULL) {
-		return;
-	}
+	if (cor_borda == NULL || cor_preenchimento == NULL) return;
 
 	char *copia_preenchimento = malloc(strlen(cor_preenchimento) + 1);
 	if (copia_preenchimento == NULL) {
@@ -206,9 +203,7 @@ void alterna_cores_forma(forma *f) {
 }
 
 void alterna_cores_entre_formas(forma *f1, forma *f2) {
-	if (f1 == NULL || f2 == NULL) {
-		return;
-	}
+	if (f1 == NULL || f2 == NULL) return;
 
 	if (f1 == f2) {
 		alterna_cores_forma(f1);
@@ -246,6 +241,7 @@ double getAreaForma(forma *f) {
 		case RETANGULO: return calcAreaRetangulo(f -> dados);
 		case LINHA: return calcAreaLinha(f -> dados);
 		case TEXTO: return calcAreaTexto(f -> dados);
+		default: break;
 	}
 
 	return 0.0;
@@ -261,8 +257,10 @@ void destrutorForma(forma *f) {
 	switch (f -> tipo) {
 		case CIRCULO: destrutorCirculo(dados); break;
 		case RETANGULO: destrutorRetangulo(dados); break;
-		case LINHA: destrutorLinha(dados); break;
+		case LINHA:
+		case ANTEPARO: destrutorLinha(dados); break;
 		case TEXTO: destrutorTexto(dados); break;
+		default: break;
 	}
 
 	f -> dados = NULL;
@@ -319,18 +317,18 @@ void setPosicaoForma(forma *f, double x, double y) {
 	}
 }
 
-void desenhaFormaSvg(forma *f, FILE *svg) {
-	tipoForma tipo = getTipoForma(f);
-	void *dados = getFormaDados(f);
-
-	switch (tipo) {
-		case CIRCULO: insereCirculo(svg, (circulo*)dados); break;
-		case RETANGULO: insereRetangulo(svg, (retangulo*)dados); break;
-		case LINHA: insereLinha(svg, (linha*)dados); break;
-		case TEXTO:  insereTexto(svg, (texto*)dados); break;
-		default: break;
-	}
-}
+// void desenhaFormaSvg(forma *f, FILE *svg) {
+// 	tipoForma tipo = getTipoForma(f);
+// 	void *dados = getFormaDados(f);
+//
+// 	switch (tipo) {
+// 		case CIRCULO: insereCirculo(svg, (circulo*)dados); break;
+// 		case RETANGULO: insereRetangulo(svg, (retangulo*)dados); break;
+// 		case LINHA: insereLinha(svg, (linha*)dados); break;
+// 		case TEXTO:  insereTexto(svg, (texto*)dados); break;
+// 		default: break;
+// 	}
+// }
 
 void escreveDadosFormaTxt(forma *f, FILE *txt, char *reportDaFuncaoQRY) {
     tipoForma tipo = getTipoForma(f);
@@ -440,5 +438,59 @@ double getYForma(forma *f) {
 		default: return 0.0;
 	}
 }
+
+lista *forma_anteparo(forma *f, char orientacao) {
+	tipoForma tipo = getTipoForma(f);
+	void *dados = getFormaDados(f);
+
+	static int id_anteparo = 10000;
+	id_anteparo++;
+	lista *anteparos = init_lista();
+	if (anteparos == NULL) return NULL;
+
+	switch (tipo) {
+		case CIRCULO: {
+			linha *anteparo_circulo = circulo_anteparo(dados, orientacao);
+			forma *criada = criaForma(id_anteparo,  ANTEPARO, anteparo_circulo);
+			insert_tail(anteparos, criada);
+			id_anteparo++;
+			break;
+		}
+
+		case RETANGULO: {
+			lista *anteparos_ret = retangulo_anteparo(dados);
+			while (get_tam_lista(anteparos_ret) != 0) {
+				linha *retirado = remove_head(anteparos_ret);
+				forma *criada = criaForma(id_anteparo, ANTEPARO, retirado);
+				insert_tail(anteparos, criada);
+				 id_anteparo++;
+			}
+			free_lista(anteparos_ret, NULL);
+			break;
+		}
+
+		case LINHA: {
+			linha *copia = copia_linha(dados);
+			forma *criada = criaForma(id_anteparo, ANTEPARO, copia);
+			insert_tail(anteparos, criada);
+			id_anteparo++;
+			break;
+		}
+
+		case TEXTO: {
+			linha *texto = converter_texto_para_linha(dados);
+			forma *criada = criaForma(id_anteparo, ANTEPARO, texto);
+			insert_tail(anteparos, criada);
+			 id_anteparo++;
+			break;
+		}
+
+		default:
+			return init_lista();
+	}
+
+	return anteparos;
+}
+
 
 
