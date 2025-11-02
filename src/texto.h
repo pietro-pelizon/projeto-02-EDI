@@ -1,5 +1,6 @@
 #ifndef TEXTO_H
 #define TEXTO_H
+#include "linha.h"
 
 
 /* ------- TAD TEXTO -------
@@ -188,5 +189,9 @@ estilo *criaCopiaEstilo(estilo *original);
 /// @param e: Ponteiro para o estilo a ser liberado.
 void destroiEstilo(estilo *e);
 
+/// @brief Transforma um texto em uma linha
+/// @param t Ponteiro para o texto
+/// @return Retorna uma linha já criada
+linha *converter_texto_para_linha(texto *t);
 
 #endif //TEXTO_H
