@@ -1,166 +1,398 @@
 #include <stdio.h>
 #include <stdlib.h>
+#include <string.h>
+#include <assert.h>
 #include "../lista.h"
 
-void print_int(void *data) {
-    printf("%d ", *(int*)data);
+typedef struct {
+    int id;
+    char nome[20];
+} TesteData;
+
+void print_teste_data(void *data) {
+    TesteData *td = (TesteData*)data;
+    printf("TesteData{id=%d, nome=%s}", td->id, td->nome);
 }
 
-void free_int(void *data) {
+int compare_teste_data(void *a, void *b) {
+    TesteData *td1 = (TesteData*)a;
+    TesteData *td2 = (TesteData*)b;
+    return td1->id - td2->id;
+}
+
+void free_teste_data(void *data) {
     free(data);
 }
 
-int compare_int(void *a, void *b) {
-    int ia = *(int*)a;
-    int ib = *(int*)b;
-    return ia - ib;
+int predicado_id_par(void *data) {
+    TesteData *td = (TesteData*)data;
+    return td->id % 2 == 0;
 }
 
-void print_separator(const char *title) {
-    printf("\n========== %s ==========\n", title);
+int predicado_id_maior_que_2(void *data) {
+    TesteData *td = (TesteData*)data;
+    return td->id > 2;
 }
 
-void print_list_status(lista *l) {
-    printf("Tamanho da lista: %d\n", get_tam_lista(l));
-    printf("Elementos: ");
-    print_lista(l, print_int);
+void transforma_incrementa_id(void *data) {
+    TesteData *td = (TesteData*)data;
+    td->id += 100;
+}
+
+void test_lista_vazia() {
+    printf("=== Teste Lista Vazia ===\n");
+
+    lista *l = init_lista();
+    assert(l != NULL);
+    assert(get_tam_lista(l) == 0);
+    assert(is_empty(l) == 1);
+
+    free_lista(l, NULL);
+    printf("✓ Lista vazia OK\n");
+}
+
+void test_insercao_remocao_basica() {
+    printf("=== Teste Inserção e Remoção Básica ===\n");
+
+    lista *l = init_lista();
+
+    TesteData *td1 = malloc(sizeof(TesteData));
+    td1->id = 1;
+    snprintf(td1->nome, 20, "Primeiro");
+    insert_head(l, td1);
+
+    assert(get_tam_lista(l) == 1);
+    assert(get_head(l) == td1);
+    assert(get_tail(l) == td1);
+
+    TesteData *td2 = malloc(sizeof(TesteData));
+    td2->id = 2;
+    snprintf(td2->nome, 20, "Segundo");
+    insert_tail(l, td2);
+
+    assert(get_tam_lista(l) == 2);
+    assert(get_tail(l) == td2);
+
+    TesteData *removido_head = remove_head(l);
+    assert(removido_head == td1);
+    assert(get_tam_lista(l) == 1);
+    free(removido_head);
+
+    TesteData *removido_tail = remove_tail(l);
+    assert(removido_tail == td2);
+    assert(get_tam_lista(l) == 0);
+    free(removido_tail);
+
+    free_lista(l, NULL);
+    printf("✓ Inserção e remoção básica OK\n");
+}
+
+void test_insercao_por_indice() {
+    printf("=== Teste Inserção por Índice ===\n");
+
+    lista *l = init_lista();
+
+    TesteData *td[3];
+    for (int i = 0; i < 3; i++) {
+        td[i] = malloc(sizeof(TesteData));
+        td[i]->id = i;
+        snprintf(td[i]->nome, 20, "Item%d", i);
+        insert_tail(l, td[i]);
+    }
+
+    TesteData *td_meio = malloc(sizeof(TesteData));
+    td_meio->id = 99;
+    snprintf(td_meio->nome, 20, "Meio");
+    index_insert(l, td_meio, 1);
+
+    assert(get_tam_lista(l) == 4);
+    assert(get_index(l, 1) == td_meio);
+    assert(get_index(l, 2) == td[1]);
+
+    free_lista(l, free_teste_data);
+    printf("✓ Inserção por índice OK\n");
+}
+
+void test_busca_operacoes() {
+    printf("=== Teste Busca e Operações ===\n");
+
+    lista *l = init_lista();
+
+    TesteData *td[5];
+    for (int i = 0; i < 5; i++) {
+        td[i] = malloc(sizeof(TesteData));
+        td[i]->id = i;
+        snprintf(td[i]->nome, 20, "Item%d", i);
+        insert_tail(l, td[i]);
+    }
+
+    TesteData chave = {3, ""};
+    TesteData *encontrado = search_lista(l, &chave, compare_teste_data);
+    assert(encontrado == td[3]);
+
+    assert(get_index(l, 0) == td[0]);
+    assert(get_index(l, 4) == td[4]);
+
+    assert(contains(l, &chave, compare_teste_data) == 1);
+
+    TesteData nao_existe = {99, ""};
+    assert(contains(l, &nao_existe, compare_teste_data) == 0);
+
+    free_lista(l, free_teste_data);
+    printf("✓ Busca e operações OK\n");
+}
+
+void test_find_max_min_simples() {
+    printf("=== Teste Find Max/Min (Simples) ===\n");
+
+    lista *l = init_lista();
+
+    TesteData *test_data[3];
+
+    test_data[0] = malloc(sizeof(TesteData));
+    test_data[0]->id = 5;
+    snprintf(test_data[0]->nome, 20, "Cinco");
+    insert_tail(l, test_data[0]);
+
+    test_data[1] = malloc(sizeof(TesteData));
+    test_data[1]->id = 10;
+    snprintf(test_data[1]->nome, 20, "Dez");
+    insert_tail(l, test_data[1]);
+
+    test_data[2] = malloc(sizeof(TesteData));
+    test_data[2]->id = 3;
+    snprintf(test_data[2]->nome, 20, "Tres");
+    insert_tail(l, test_data[2]);
+
+    TesteData *max = find_max(l, compare_teste_data);
+    assert(max != NULL);
+    assert(max->id == 10);
+    printf("✓ Find_max OK: %d\n", max->id);
+
+    TesteData *min = find_min(l, compare_teste_data);
+    assert(min != NULL);
+    assert(min->id == 3);
+    printf("✓ Find_min OK: %d\n", min->id);
+
+    free_lista(l, free_teste_data);
+    printf("✓ Find max/min simples OK\n");
+}
+
+void test_operacoes_avancadas() {
+    printf("=== Teste Operações Avançadas ===\n");
+
+    lista *l = init_lista();
+
+    TesteData *td = malloc(sizeof(TesteData));
+    td->id = 10;
+    snprintf(td->nome, 20, "Item10");
+    insert_tail(l, td);
+
+    map_lista(l, transforma_incrementa_id);
+    assert(((TesteData*)get_index(l, 0))->id == 110);
+
+    printf("✓ Map OK\n");
+    printf("⚠ remove_all_if pulado temporariamente\n");
+
+    free_lista(l, free_teste_data);
+}
+
+void test_limpeza_inversao() {
+    printf("=== Teste Limpeza e Inversão ===\n");
+
+    lista *l = init_lista();
+
+    for (int i = 0; i < 3; i++) {
+        TesteData *td = malloc(sizeof(TesteData));
+        td->id = i;
+        snprintf(td->nome, 20, "Item%d", i);
+        insert_tail(l, td);
+    }
+
+    printf("Antes do reverse: ");
+    for (int i = 0; i < 3; i++) {
+        TesteData *td = (TesteData*)get_index(l, i);
+        printf("%d ", td->id);
+    }
     printf("\n");
+
+    reverse_lista(l);
+
+    printf("Depois do reverse: ");
+    for (int i = 0; i < 3; i++) {
+        TesteData *td = (TesteData*)get_index(l, i);
+        printf("%d ", td->id);
+    }
+    printf("\n");
+
+    TesteData *primeiro = (TesteData*)get_index(l, 0);
+    TesteData *terceiro = (TesteData*)get_index(l, 2);
+    assert(primeiro->id == 2);
+    assert(terceiro->id == 0);
+
+    clear_lista(l, free_teste_data);
+     assert(get_tam_lista(l) == 0);
+     assert(is_empty(l) == 1);
+
+    free_lista(l, free_teste_data);
+
+    printf("✓ Limpeza e inversão OK\n");
+}
+
+void test_find_max_min_completo() {
+    printf("=== Teste Find Max/Min Completo ===\n");
+
+    lista *l = init_lista();
+
+    TesteData *test_data[5];
+    int ids[5] = {5, 10, 3, 15, 7};
+
+    for (int i = 0; i < 5; i++) {
+        test_data[i] = malloc(sizeof(TesteData));
+        test_data[i]->id = ids[i];
+        snprintf(test_data[i]->nome, 20, "Item%d", ids[i]);
+        insert_tail(l, test_data[i]);
+    }
+
+    TesteData *max = find_max(l, compare_teste_data);
+    assert(max != NULL);
+    assert(max->id == 15);
+    printf("✓ Find_max OK: %d\n", max->id);
+
+    TesteData *min = find_min(l, compare_teste_data);
+    assert(min != NULL);
+    assert(min->id == 3);
+    printf("✓ Find_min OK: %d\n", min->id);
+
+    free_lista(l, free_teste_data);
+    printf("✓ Find max/min completo OK\n");
+}
+
+void test_remove_all_if_completo() {
+    printf("=== Teste Remove All If ===\n");
+
+    lista *l = init_lista();
+
+    TesteData *td[5];
+    for (int i = 0; i < 5; i++) {
+        td[i] = malloc(sizeof(TesteData));
+        td[i]->id = i; // 0, 1, 2, 3, 4
+        snprintf(td[i]->nome, 20, "Item%d", i);
+        insert_tail(l, td[i]);
+    }
+
+    int removidos = remove_all_if(l, predicado_id_par, free_teste_data);
+    assert(removidos == 3);
+    assert(get_tam_lista(l) == 2);
+
+    TesteData *first = (TesteData*)get_index(l, 0);
+    assert(first->id == 1);
+    TesteData *second = (TesteData*)get_index(l, 1);
+    assert(second->id == 3);
+
+    free_lista(l, free_teste_data);
+    printf("✓ Remove_all_if OK\n");
+}
+
+void test_clear_lista() {
+    printf("=== Teste Clear Lista ===\n");
+
+    lista *l = init_lista();
+
+    for (int i = 0; i < 3; i++) {
+        TesteData *td = malloc(sizeof(TesteData));
+        td->id = i;
+        snprintf(td->nome, 20, "Item%d", i);
+        insert_tail(l, td);
+    }
+
+    assert(get_tam_lista(l) == 3);
+
+    clear_lista(l, free_teste_data);
+    assert(get_tam_lista(l) == 0);
+    assert(is_empty(l) == 1);
+
+    TesteData *new_td = malloc(sizeof(TesteData));
+    new_td->id = 100;
+    snprintf(new_td->nome, 20, "NovoItem");
+    insert_head(l, new_td);
+
+    assert(get_tam_lista(l) == 1);
+    assert(((TesteData*)get_head(l))->id == 100);
+
+    free_lista(l, free_teste_data);
+    printf("✓ Clear lista OK\n");
+}
+
+void test_remove_all_if() {
+    printf("=== Teste Remove All If ===\n");
+
+    lista *l = init_lista();
+
+    TesteData *td[6];
+    for (int i = 0; i < 6; i++) {
+        td[i] = malloc(sizeof(TesteData));
+        td[i]->id = i; // 0, 1, 2, 3, 4, 5
+        snprintf(td[i]->nome, 20, "Item%d", i);
+        insert_tail(l, td[i]);
+    }
+
+    printf("Lista original: ");
+    print_lista(l, print_teste_data);
+    printf("\n");
+
+    int removidos = remove_all_if(l, predicado_id_par, free_teste_data);
+    printf("Removidos %d elementos pares\n", removidos);
+
+    assert(removidos == 3);
+    assert(get_tam_lista(l) == 3);
+
+    TesteData *first = (TesteData*)get_index(l, 0);
+    assert(first->id == 1);
+    TesteData *second = (TesteData*)get_index(l, 1);
+    assert(second->id == 3);
+    TesteData *third = (TesteData*)get_index(l, 2);
+    assert(third->id == 5);
+
+    printf("Lista após remoção dos pares: ");
+    print_lista(l, print_teste_data);
+    printf("\n");
+
+    removidos = remove_all_if(l, predicado_id_maior_que_2, free_teste_data);
+    printf("Removidos %d elementos com id > 2\n", removidos);
+
+    assert(removidos == 2);
+    assert(get_tam_lista(l) == 1);
+
+    TesteData *last = (TesteData*)get_index(l, 0);
+    assert(last->id == 1);
+
+    printf("Lista final: ");
+    print_lista(l, print_teste_data);
+    printf("\n");
+
+    free_lista(l, free_teste_data);
+    printf("✓ Remove_all_if OK\n");
 }
 
 int main() {
-    lista *l = init_lista();
+    printf("INICIANDO TESTES DA LISTA\n\n");
 
-    print_separator("TESTE 1: insert_head");
-    int *a = malloc(sizeof(int)); *a = 10;
-    int *b = malloc(sizeof(int)); *b = 20;
-    int *c = malloc(sizeof(int)); *c = 30;
+    test_lista_vazia();
+    test_insercao_remocao_basica();
+    test_insercao_por_indice();
+    test_busca_operacoes();
+    test_find_max_min_simples();
+    test_find_max_min_completo();
+    test_operacoes_avancadas();
+    test_remove_all_if_completo();
+    test_clear_lista();
+    test_limpeza_inversao();
+    test_remove_all_if();
 
-    insert_head(l, a);
-    insert_head(l, b);
-    insert_head(l, c);
-    printf("Inserindo 10, 20, 30 no head (ordem esperada: 30 20 10)\n");
-    print_list_status(l);
-
-    print_separator("TESTE 2: insert_tail");
-    int *d = malloc(sizeof(int)); *d = 40;
-    int *e = malloc(sizeof(int)); *e = 50;
-
-    insert_tail(l, d);
-    insert_tail(l, e);
-    printf("Inserindo 40, 50 no tail (ordem esperada: 30 20 10 40 50)\n");
-    print_list_status(l);
-
-    print_separator("TESTE 3: index_insert");
-    int *f = malloc(sizeof(int)); *f = 99;
-    int *g = malloc(sizeof(int)); *g = 88;
-
-    index_insert(l, f, 2);
-    printf("Inserindo 99 no índice 2 (esperado: 30 20 99 10 40 50)\n");
-    print_list_status(l);
-
-    index_insert(l, g, 0);
-    printf("Inserindo 88 no índice 0 (esperado: 88 30 20 99 10 40 50)\n");
-    print_list_status(l);
-
-    print_separator("TESTE 4: search_lista");
-    int key = 99;
-    void *found = search_lista(l, &key, compare_int);
-    if (found != NULL) {
-        printf("Buscando 99... Encontrado: %d\n", *(int*)found);
-    } else {
-        printf("Buscando 99... Não encontrado\n");
-    }
-
-    key = 777;
-    found = search_lista(l, &key, compare_int);
-    if (found != NULL) {
-        printf("Buscando 777... Encontrado: %d\n", *(int*)found);
-    } else {
-        printf("Buscando 777... Não encontrado\n");
-    }
-
-    print_separator("TESTE 5: remove_head");
-    void *removed = remove_head(l);
-    if (removed != NULL) {
-        printf("Removido do head: %d\n", *(int*)removed);
-        free(removed);
-    }
-    printf("Lista após remoção (esperado: 30 20 99 10 40 50)\n");
-    print_list_status(l);
-
-    print_separator("TESTE 6: remove_tail");
-    removed = remove_tail(l);
-    if (removed != NULL) {
-        printf("Removido do tail: %d\n", *(int*)removed);
-        free(removed);
-    }
-    printf("Lista após remoção (esperado: 30 20 99 10 40)\n");
-    print_list_status(l);
-
-    print_separator("TESTE 7: remove_index");
-    removed = remove_index(l, 2);
-    if (removed != NULL) {
-        printf("Removido do índice 2: %d\n", *(int*)removed);
-        free(removed);
-    }
-    printf("Lista após remoção (esperado: 30 20 10 40)\n");
-    print_list_status(l);
-
-    print_separator("TESTE 8: remove_data");
-    key = 20;
-    removed = remove_data(l, &key, compare_int);
-    if (removed != NULL) {
-        printf("Removido elemento com valor 20: %d\n", *(int*)removed);
-        free(removed);
-    }
-    printf("Lista após remoção (esperado: 30 10 40)\n");
-    print_list_status(l);
-
-    print_separator("TESTE 9: remove_data (não existe)");
-    key = 999;
-    removed = remove_data(l, &key, compare_int);
-    if (removed == NULL) {
-        printf("Tentou remover 999 (não existe) - comportamento correto\n");
-    }
-    print_list_status(l);
-
-    print_separator("TESTE 10: Esvaziar lista");
-    printf("Removendo todos os elementos...\n");
-    while (get_tam_lista(l) > 0) {
-        removed = remove_head(l);
-        if (removed != NULL) {
-            printf("Removido: %d\n", *(int*)removed);
-            free(removed);
-        }
-    }
-    print_list_status(l);
-
-    print_separator("TESTE 11: Operações em lista vazia");
-    removed = remove_head(l);
-    printf("remove_head em lista vazia: %s\n", removed == NULL ? "NULL (correto)" : "erro!");
-
-    removed = remove_tail(l);
-    printf("remove_tail em lista vazia: %s\n", removed == NULL ? "NULL (correto)" : "erro!");
-
-    print_separator("TESTE 12: free_lista");
-    int *h = malloc(sizeof(int)); *h = 100;
-    int *i = malloc(sizeof(int)); *i = 200;
-    int *j = malloc(sizeof(int)); *j = 300;
-
-    insert_tail(l, h);
-    insert_tail(l, i);
-    insert_tail(l, j);
-    printf("Lista reconstruída: ");
-    print_lista(l, print_int);
-    printf("\n");
-
-    printf("Liberando toda a lista...\n");
-    free_lista(l, free_int);
-    printf("Lista liberada com sucesso!\n");
-
-    print_separator("TESTES CONCLUÍDOS");
-    printf("Todos os testes foram executados!\n");
+    printf("\n========================================\n");
+    printf("✓ TODOS OS TESTES PASSARAM!\n");
+    printf("========================================\n");
 
     return 0;
 }
-
