@@ -1,6 +1,6 @@
 #ifndef CIRCULO_H
 #define CIRCULO_H
-
+#include "linha.h"
 
 
 /* ------- TAD CIRCULO -------
@@ -101,5 +101,11 @@ double calcAreaCirculo(circulo *c);
 /// @brief: Libera o objeto círculo.
 /// @param c: Ponteiro para o círculo a ser liberado
 void destrutorCirculo(circulo *c);
+
+/// @brief Transforma um círculo em uma linha
+/// @param c Ponteiro para o círculo
+/// @param orientacao Determina se a linha será vertical ou horizontal
+/// @return Retorna a linha criada
+linha *circulo_anteparo(circulo *c, char orientacao);
 
 #endif //CIRCULO_H
