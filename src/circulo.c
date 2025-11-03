@@ -1,8 +1,8 @@
-#include "circulo.h"
 #include <string.h>
 #include <stdlib.h>
 #include <stdio.h>
 
+#include "circulo.h"
 #include "linha.h"
 
 #define PI 3.14159265358
