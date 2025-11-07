@@ -3,8 +3,6 @@
 #include <stdio.h>
 #include <stdbool.h>
 
-#include "formas.h"
-
 typedef struct stNode {
     void *data;
     struct stNode *next;
@@ -250,7 +248,7 @@ void *remove_index(lista *l, int index) {
 
 }
 
-void *remove_data(lista *l, void *key, int (*compare)(void *a, void *b)) {
+void *remove_first_data(lista *l, void *key, int (*compare)(void *a, void *b)) {
     if (l == NULL) {
         return NULL;
     }
@@ -339,7 +337,7 @@ node *get_tail_node(lista *l) {
     return l -> tail;
 }
 
-node *get_index_node(lista *l, int index) {
+node *get_node_index(lista *l, int index) {
     if (is_empty_lista(l)) {
         printf("lista vazia!\n");
         return NULL;
@@ -366,7 +364,7 @@ node *get_index_node(lista *l, int index) {
     return current;
 }
 
-void *get_index_data(lista *l, int index) {
+void *get_data_index(lista *l, int index) {
     if (is_empty_lista(l)) {
         printf("lista vazia!\n");
         return NULL;
@@ -535,25 +533,32 @@ int contains(lista *l, void *key, int (*compare)(void *a, void *b)) {
     return false;
 }
 
-void swap(lista *l, int index1, int index2) {
-    if (l == NULL) return;
-    if (is_empty_lista(l)) return;
-    if (index1 == index2) return;
-    if (index1 < 0|| index2 < 0 || index1 > l -> tam || index2 > l -> tam) return;
-
-    node *node1 = l -> head;
-    for (int i = 0; i < index1; i++) {
-        node1 = node1 -> next;
+int get_index(lista *l, node *n) {
+    if (l == NULL || n == NULL) {
+        return -1;
     }
 
-    node *node2 = l -> head;
-    for (int i = 0; i < index2; i++) {
-        node2 = node2 -> next;
+    int i = 0;
+
+    node *aux = l -> head;
+    while (aux != NULL && aux != n) {
+        aux = go_next_node(aux);
+        i++;
     }
 
-     void *temp = node1 -> data;
-    node1 -> data = node2 -> data;
-    node2 -> data = temp;
+    if (aux == NULL) {
+        return -1;
+    }
+
+    return i;
+}
+
+void swap_node_data(node *n1, node *n2) {
+    if (n1 == NULL || n2 == NULL) return;
+
+    void *temp = n1 -> data;
+    n1 -> data = n2 -> data;
+    n2 -> data = temp;
 }
 
 lista *filter_lista(lista *l, int (*predicate)(void *data)) {

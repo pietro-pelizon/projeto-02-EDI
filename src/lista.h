@@ -71,7 +71,7 @@ void *remove_index(lista *l, int index);
 /// @param key Dado a ser removido
 /// @param compare Função de comparação
 /// @return Retorna o dado removido ou NULL se não encontrado
-void *remove_data(lista *l, void *key, int (*compare)(void *a, void *b));
+void *remove_first_data(lista *l, void *key, int (*compare)(void *a, void *b));
 
 /// @brief Libera o conteúdo da lista
 /// @param l Ponteiro para a lista
@@ -117,13 +117,13 @@ node *get_tail_prev(lista *l);
 /// @param l Ponteiro para a lista
 /// @param index Posição na lista do nó desejado
 /// @return Retorna o nó
-node *get_index_node(lista *l, int index);
+node *get_node_index(lista *l, int index);
 
 /// @brief Retorna o dado no índice especificado sem remover
 /// @param l Ponteiro para a lista
 /// @param index Índice do elemento desejado
 /// @return Retorna o dado ou NULL se o índice for inválido
-void *get_index_data(lista *l, int index);
+void *get_data_index(lista *l, int index);
 
 /// @brief Retorna o primeiro elemento sem remover
 /// @param l Ponteiro para a lista
@@ -187,5 +187,16 @@ void map_lista(lista *l, void (*transform)(void *data));
 /// @param free_data Callback para a função que sabe apagar um dado
 /// @return Quantidade de elementos removidos
 int remove_all_if(lista *l, int (*predicate)(void *data), void (*free_data)(void *data));
+
+/// @brief Percorre a lista até encontrar o indíce do nó
+/// @param l Ponteiro para a lista
+/// @param n Ponteiro para o nó que deseja encontrar o indíce
+/// @return Retorna o indíce do nó
+int get_index(lista *l, node *n);
+
+/// @brief Efetua a troca do dado entre dois nós
+/// @param n1 Nó 1
+/// @param n2 Nó 2
+void swap_node_data(node *n1, node *n2);
 
 #endif //LISTA_H
