@@ -66,6 +66,6 @@ void acao_desenhar(void* item, void* aux);
 /// @brief: Função que recebe as formas que serão adicionadas ao .svg criado.
 /// @param nome_svg: Nome do arquivo .svg.
 /// @param filaDeFormas: Fila contendo as formas que serão adicionadas ao .svg.
-void gerarArquivoSvg(const char *nome_svg, lista *filaDeFormas);
+void gerar_arquivo_svg(const char *nome_svg, lista *filaDeFormas);
 
 #endif //SVG_H

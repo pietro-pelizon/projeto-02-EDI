@@ -110,7 +110,7 @@ void acao_desenhar(void* item, void* aux) {
 	desenhaFormaSvg((forma*)item, arquivo_svg);
 }
 
-void gerarArquivoSvg(const char *nome_svg, lista *lista_formas) {
+void gerar_arquivo_svg(const char *nome_svg, lista *lista_formas) {
 	if (lista_formas == NULL) {
 		fprintf(stderr, "Aviso: filaDeFormas NULL em gerarArquivoSvg(%s)\n", nome_svg);
 		return;
