@@ -3,6 +3,8 @@
 #include <stdio.h>
 #include <stdbool.h>
 
+#include "formas.h"
+
 typedef struct stNode {
     void *data;
     struct stNode *next;
@@ -33,7 +35,7 @@ int get_tam_lista(lista *l) {
     return l -> tam;
 }
 
-bool is_empty(lista *l) {
+bool is_empty_lista(lista *l) {
     if (l -> tam == 0 || l -> head == NULL) {
         return true;
     }
@@ -73,7 +75,7 @@ void insert_tail(lista *l, void *new_data) {
     new -> data = new_data;
     new -> next = NULL;
 
-   if (is_empty(l)) {
+   if (is_empty_lista(l)) {
         new -> prev = NULL;
         l -> head = new;
         l -> tail = new;
@@ -192,7 +194,7 @@ void *remove_tail(lista *l) {
         return NULL;
     }
 
-    if (is_empty(l)) {
+    if (is_empty_lista(l)) {
         printf("DEBUG: Nada a remover, a lista ja esta vazia!\n");
         return NULL;
     }
@@ -293,8 +295,8 @@ void free_lista(lista *l, void (*free_data)(void *data)) {
     free(l);
 }
 
-void *get_head(lista *l) {
-    if (is_empty(l)) {
+void *get_head_data(lista *l) {
+    if (is_empty_lista(l)) {
         printf("lista vazia!\n");
         return NULL;
     }
@@ -302,8 +304,25 @@ void *get_head(lista *l) {
     return l -> head -> data;
 }
 
-void *get_tail(lista *l) {
-    if (is_empty(l)) {
+void *get_node_data(node *n) {
+    if (n == NULL || n -> data == NULL) {
+        return NULL;
+    }
+
+    return n -> data;
+}
+
+node *get_head_node(lista *l) {
+    if (is_empty_lista(l)) {
+        printf("lista vazia!\n");
+        return NULL;
+    }
+
+    return l -> head;
+}
+
+void *get_tail_data(lista *l) {
+    if (is_empty_lista(l)) {
         printf("lista vazia!\n");
         return NULL;
     }
@@ -311,23 +330,59 @@ void *get_tail(lista *l) {
     return l -> tail -> data;
 }
 
-void *get_index(lista *l, int index) {
-    if (is_empty(l)) {
+node *get_tail_node(lista *l) {
+    if (is_empty_lista(l)) {
         printf("lista vazia!\n");
         return NULL;
     }
 
-    if (index < 0 || index > l -> tam) {
+    return l -> tail;
+}
+
+node *get_index_node(lista *l, int index) {
+    if (is_empty_lista(l)) {
+        printf("lista vazia!\n");
+        return NULL;
+    }
+
+    if (index < 0 || index > l -> tam - 1) {
         printf("Index inválido!\n");
         return NULL;
     }
 
     if (index == 0) {
-        return get_head(l);
+        return get_head_node(l);
     }
 
-    if (index == l -> tam) {
-        return get_tail(l);
+    if (index == l -> tam - 1) {
+        return get_tail_node(l);
+    }
+
+    node *current = l -> head;
+    for (int i = 0; i < index; i++) {
+        current = current -> next;
+    }
+
+    return current;
+}
+
+void *get_index_data(lista *l, int index) {
+    if (is_empty_lista(l)) {
+        printf("lista vazia!\n");
+        return NULL;
+    }
+
+    if (index < 0 || index > l -> tam - 1) {
+        printf("Index inválido!\n");
+        return NULL;
+    }
+
+    if (index == 0) {
+        return get_head_data(l);
+    }
+
+    if (index == l -> tam - 1) {
+        return get_tail_data(l);
     }
 
     node *current = l -> head;
@@ -336,6 +391,38 @@ void *get_index(lista *l, int index) {
     }
 
     return current -> data;
+}
+
+node *go_next_node(node *n) {
+    if (n == NULL || n -> next == NULL) {
+        return NULL;
+    }
+
+    return n -> next;
+}
+
+node *go_prev_node(node *n) {
+    if (n == NULL || n -> prev == NULL) {
+        return NULL;
+    }
+
+    return n -> prev;
+}
+
+node *get_head_next(lista *l) {
+    if (is_empty_lista(l)) {
+        return NULL;
+    }
+
+    return l -> head -> next;
+}
+
+node *get_tail_prev(lista *l) {
+    if (is_empty_lista(l)) {
+        return NULL;
+    }
+
+    return l -> tail -> prev;
 }
 
 void reverse_lista(lista *l) {
@@ -385,7 +472,7 @@ void clear_lista(lista *l, void (*free_data)(void *data)) {
 
 void foreach_lista(lista *l, void (*apply)(void *data)) {
     if (l == NULL) return;
-    if (is_empty(l)) {
+    if (is_empty_lista(l)) {
             return;
     }
 
@@ -399,7 +486,7 @@ void foreach_lista(lista *l, void (*apply)(void *data)) {
 }
 
 void *find_max(lista *l, int (*compare)(void *a, void *b)) {
-    if (is_empty(l)) {
+    if (is_empty_lista(l)) {
         return NULL;
     }
 
@@ -420,7 +507,7 @@ void *find_max(lista *l, int (*compare)(void *a, void *b)) {
 }
 
 void *find_min(lista *l, int (*compare)(void *a, void *b)) {
-     if (is_empty(l)) {
+     if (is_empty_lista(l)) {
         return NULL;
     }
 
@@ -450,7 +537,7 @@ int contains(lista *l, void *key, int (*compare)(void *a, void *b)) {
 
 void swap(lista *l, int index1, int index2) {
     if (l == NULL) return;
-    if (is_empty(l)) return;
+    if (is_empty_lista(l)) return;
     if (index1 == index2) return;
     if (index1 < 0|| index2 < 0 || index1 > l -> tam || index2 > l -> tam) return;
 
@@ -471,7 +558,7 @@ void swap(lista *l, int index1, int index2) {
 
 lista *filter_lista(lista *l, int (*predicate)(void *data)) {
     if (l == NULL) return NULL;
-    if (is_empty(l)) return init_lista();
+    if (is_empty_lista(l)) return init_lista();
 
     lista *filtered_lista = init_lista();
     if (filtered_lista == NULL) {
@@ -491,7 +578,7 @@ lista *filter_lista(lista *l, int (*predicate)(void *data)) {
 
 
 void map_lista(lista *l, void (*transform)(void *data)) {
-    if (l == NULL || is_empty(l) || transform == NULL) return;
+    if (l == NULL || is_empty_lista(l) || transform == NULL) return;
 
     node *current = l -> head;
 
@@ -512,7 +599,6 @@ int remove_all_if(lista *l, int (*predicate)(void *data), void (*free_data)(void
         next_node = current->next;
 
         if (predicate(current->data)) {
-            // Remove o nó atual
             if (current->prev != NULL) {
                 current->prev->next = current->next;
             } else {

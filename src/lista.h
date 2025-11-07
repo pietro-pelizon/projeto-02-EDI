@@ -12,6 +12,11 @@ typedef struct stLista lista;
 /// @return Retorna uma lista duplamente ligada
 lista *init_lista();
 
+/// @brief Verifica se uma lista está vazia
+/// @param l Ponteiro para a lista
+/// @return Retorna true caso esteja vazia e false caso o contrário
+bool is_empty_lista(lista *l);
+
 /// @brief Pega e retorna o tamanho de uma lista
 /// @param l Ponteiro para a lista
 /// @return Retorna o tamanho atual da lista
@@ -73,21 +78,62 @@ void *remove_data(lista *l, void *key, int (*compare)(void *a, void *b));
 /// @param free_data Callback da função que sabe liberar os dados da lista
 void free_lista(lista *l, void (*free_data)(void *data));
 
+/// @brief Pega e retorna os dados contidos dentro do nó referenciado
+/// @param n Ponteiro para o nó
+/// @return Dados contidos no nó
+void *get_node_data(node *n);
+
+/// @brief Dado um nó, retorna o nó seguinte a ele
+/// @param n Ponteiro para o nó da lista
+/// @return O próximo nó da lista, NULL caso não exista
+node *go_next_node(node *n);
+
+/// @brief Dado um nó, retorna o nó anterior a ele
+/// @param n Ponteiro para o nó da lista
+/// @return Retorna o nó anterior da lista, NULL caso não exista
+node *go_prev_node(node *n);
+
+/// @brief Retorna o nó localizado no início da lista
+/// @param l Ponteiro para a lista
+/// @return O nó localizado no início da lista
+node *get_head_node(lista *l);
+
+/// @brief Retorna o dado contido no nó seguinte ao inicial;
+/// @param l Ponteiro para a lista
+/// @return Nó adjacente ao início da lista
+node *get_head_next(lista *l);
+
+/// @brief Retorna o nó que pertence ao fim da lista
+/// @param l Ponteiro para a lista
+/// @return O nó localizado no fim da lista
+node *get_tail_node(lista *l);
+
+/// @brief Retorna o nó adjacente ao fim da lista
+/// @param l Ponteiro para a lista
+/// @return Nó adjacente ao fim da lista
+node *get_tail_prev(lista *l);
+
+/// @brief Retorna o nó na posição indíce espeficada
+/// @param l Ponteiro para a lista
+/// @param index Posição na lista do nó desejado
+/// @return Retorna o nó
+node *get_index_node(lista *l, int index);
+
 /// @brief Retorna o dado no índice especificado sem remover
 /// @param l Ponteiro para a lista
 /// @param index Índice do elemento desejado
 /// @return Retorna o dado ou NULL se o índice for inválido
-void *get_index(lista *l, int index);
+void *get_index_data(lista *l, int index);
 
 /// @brief Retorna o primeiro elemento sem remover
 /// @param l Ponteiro para a lista
 /// @return Retorna o dado ou NULL se a lista estiver vazia
-void *get_head(lista *l);
+void *get_head_data(lista *l);
 
 /// @brief Retorna o último elemento sem remover
 /// @param l Ponteiro para a lista
 /// @return Retorna o dado ou NULL se a lista estiver vazia
-void *get_tail(lista *l);
+void *get_tail_data(lista *l);
 
 /// @brief Inverte a ordem dos elementos na lista
 /// @param l Ponteiro para a lista
@@ -122,11 +168,16 @@ void *find_min(lista *l, int (*compare)(void *a, void *b));
 /// @return Retorna 1 se encontrar, 0 se não;
 int contains(lista *l, void *key, int (*compare)(void *a, void *b));
 
-/// @brief Filtra elementos que satisfazem uma condição
+/// @brief Dada uma lista com n elementos, cria uma lista nova
+/// com determinada elementos que satisfazem uma condição
+/// @param l Ponteiro para a lista
+/// @param predicate Função que checa se determinado dado
+/// satisfaz determinada condição
 /// @return Nova lista com elementos filtrados
 lista *filter_lista(lista *l, int (*predicate)(void *data));
 
-/// @brief Aplica transformação em cada elemento
+/// @brief Dada uma lista com n elementos, aplica uma transformação em cada elemento
+/// @param l Ponteiro para a lista
 /// @param transform Função que modifica o elemento
 void map_lista(lista *l, void (*transform)(void *data));
 
@@ -136,10 +187,5 @@ void map_lista(lista *l, void (*transform)(void *data));
 /// @param free_data Callback para a função que sabe apagar um dado
 /// @return Quantidade de elementos removidos
 int remove_all_if(lista *l, int (*predicate)(void *data), void (*free_data)(void *data));
-
-/// @brief Verifica se uma lista está vazia
-/// @param l Ponteiro para a lista
-/// @return Retorna true caso esteja vazia e false caso o contrário
-bool is_empty(lista *l);
 
 #endif //LISTA_H
