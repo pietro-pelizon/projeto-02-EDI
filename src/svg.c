@@ -110,26 +110,26 @@ void acao_desenhar(void* item, void* aux) {
 	desenhaFormaSvg((forma*)item, arquivo_svg);
 }
 
-void gerarArquivoSvg(const char *nome_svg, fila *filaDeFormas) {
-	if (filaDeFormas == NULL) {
+void gerarArquivoSvg(const char *nome_svg, lista *lista_formas) {
+	if (lista_formas == NULL) {
 		fprintf(stderr, "Aviso: filaDeFormas NULL em gerarArquivoSvg(%s)\n", nome_svg);
 		return;
 	}
 
 	FILE *arquivo_svg = inicializaSvg(nome_svg);
-	if (!arquivo_svg) {
+	if (arquivo_svg == NULL) {
 		printf("Erro ao abrir o arquivo svg!\n");
 		return;
 	}
 
-	nodeF *no_atual = getInicioFila(filaDeFormas);
+	node *no_atual = get_head_node(lista_formas);
 
 	while (no_atual != NULL) {
-		forma *f = getItemNode(no_atual);
+		forma *f = get_node_data(no_atual);
 
 		desenhaFormaSvg(f, arquivo_svg);
 
-		no_atual = getProxNode(no_atual);
+		no_atual = go_next_node(no_atual);
 	}
 
 	fechaSVG(arquivo_svg);
