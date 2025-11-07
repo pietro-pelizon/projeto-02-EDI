@@ -19,7 +19,7 @@ void test_circulo_anteparo() {
     assert(get_tam_lista(anteparos_h) == 1);
     printf("✓ Círculo -> 1 anteparo horizontal OK\n");
 
-    forma *anteparo = (forma*)get_head(anteparos_h);
+    forma *anteparo = (forma*)get_head_data(anteparos_h);
     assert(anteparo != NULL);
     assert(getTipoForma(anteparo) == ANTEPARO);
     assert(getIDforma(anteparo) >= 10000);
@@ -49,7 +49,7 @@ void test_retangulo_anteparo() {
     int ids[4] = {0};
     printf("IDs dos anteparos do retângulo:\n");
     for (int i = 0; i < 4; i++) {
-        forma *f = (forma*)get_index(anteparos, i);
+        forma *f = (forma*)get_data_index(anteparos, i);
         assert(f != NULL);
         ids[i] = getIDforma(f);
         printf("  Anteparo %d: ID = %d\n", i, ids[i]);
@@ -73,7 +73,6 @@ void test_retangulo_anteparo() {
 void test_linha_anteparo() {
     printf("=== Teste Linha -> Anteparo ===\n");
 
-    // Cria uma linha
     linha *l_dados = criaLinha(3, 10.0, 10.0, 200.0, 150.0, "black", false);
     forma *linha_forma = criaForma(3, LINHA, l_dados);
 
@@ -82,7 +81,7 @@ void test_linha_anteparo() {
     assert(get_tam_lista(anteparos) == 1);
     printf("✓ Linha -> 1 anteparo OK\n");
 
-    forma *anteparo = (forma*)get_head(anteparos);
+    forma *anteparo = (forma*)get_head_data(anteparos);
     assert(anteparo != NULL);
     assert(getTipoForma(anteparo) == ANTEPARO);
 
@@ -104,7 +103,7 @@ void test_texto_anteparo() {
     assert(get_tam_lista(anteparos) == 1);
     printf("✓ Texto -> 1 anteparo OK\n");
 
-    forma *anteparo = (forma*)get_head(anteparos);
+    forma *anteparo = (forma*)get_head_data(anteparos);
     assert(anteparo != NULL);
     assert(getTipoForma(anteparo) == ANTEPARO);
 
@@ -145,7 +144,7 @@ void test_multiplas_formas_isoladas() {
         total_anteparos_gerados += qtd_anteparos;
 
         for (int j = 0; j < qtd_anteparos; j++) {
-            forma *f = (forma*)get_index(anteparos, j);
+            forma *f = (forma*)get_data_index(anteparos, j);
             assert(getTipoForma(f) == ANTEPARO);
         }
 

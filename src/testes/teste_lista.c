@@ -3,7 +3,6 @@
 #include <string.h>
 #include <assert.h>
 
-#include "arvore.h"
 #include "../lista.h"
 
 typedef struct {
@@ -47,7 +46,7 @@ void test_lista_vazia() {
     lista *l = init_lista();
     assert(l != NULL);
     assert(get_tam_lista(l) == 0);
-    assert(is_empty(l) == 1);
+    assert(is_empty_lista(l) == 1);
 
     free_lista(l, NULL);
     printf("✓ Lista vazia OK\n");
@@ -64,8 +63,8 @@ void test_insercao_remocao_basica() {
     insert_head(l, td1);
 
     assert(get_tam_lista(l) == 1);
-    assert(get_head(l) == td1);
-    assert(get_tail(l) == td1);
+    assert(get_head_data(l) == td1);
+    assert(get_tail_data(l) == td1);
 
     TesteData *td2 = malloc(sizeof(TesteData));
     td2->id = 2;
@@ -73,7 +72,7 @@ void test_insercao_remocao_basica() {
     insert_tail(l, td2);
 
     assert(get_tam_lista(l) == 2);
-    assert(get_tail(l) == td2);
+    assert(get_tail_data(l) == td2);
 
     TesteData *removido_head = remove_head(l);
     assert(removido_head == td1);
@@ -108,8 +107,8 @@ void test_insercao_por_indice() {
     index_insert(l, td_meio, 1);
 
     assert(get_tam_lista(l) == 4);
-    assert(get_index(l, 1) == td_meio);
-    assert(get_index(l, 2) == td[1]);
+    assert(get_data_index(l, 1) == td_meio);
+    assert(get_data_index(l, 2) == td[1]);
 
     free_lista(l, free_teste_data);
     printf("✓ Inserção por índice OK\n");
@@ -132,8 +131,8 @@ void test_busca_operacoes() {
     TesteData *encontrado = search_lista(l, &chave, compare_teste_data);
     assert(encontrado == td[3]);
 
-    assert(get_index(l, 0) == td[0]);
-    assert(get_index(l, 4) == td[4]);
+    assert(get_data_index(l, 0) == td[0]);
+    assert(get_data_index(l, 4) == td[4]);
 
     assert(contains(l, &chave, compare_teste_data) == 1);
 
@@ -191,7 +190,7 @@ void test_operacoes_avancadas() {
     insert_tail(l, td);
 
     map_lista(l, transforma_incrementa_id);
-    assert(((TesteData*)get_index(l, 0))->id == 110);
+    assert(((TesteData*)get_data_index(l, 0))->id == 110);
 
     printf("✓ Map OK\n");
 
@@ -212,7 +211,7 @@ void test_limpeza_inversao() {
 
     printf("Antes do reverse: ");
     for (int i = 0; i < 3; i++) {
-        TesteData *td = (TesteData*)get_index(l, i);
+        TesteData *td = (TesteData*)get_data_index(l, i);
         printf("%d ", td->id);
     }
     printf("\n");
@@ -221,19 +220,19 @@ void test_limpeza_inversao() {
 
     printf("Depois do reverse: ");
     for (int i = 0; i < 3; i++) {
-        TesteData *td = (TesteData*)get_index(l, i);
+        TesteData *td = (TesteData*)get_data_index(l, i);
         printf("%d ", td->id);
     }
     printf("\n");
 
-    TesteData *primeiro = (TesteData*)get_index(l, 0);
-    TesteData *terceiro = (TesteData*)get_index(l, 2);
+    TesteData *primeiro = (TesteData*)get_data_index(l, 0);
+    TesteData *terceiro = (TesteData*)get_data_index(l, 2);
     assert(primeiro->id == 2);
     assert(terceiro->id == 0);
 
     clear_lista(l, free_teste_data);
      assert(get_tam_lista(l) == 0);
-     assert(is_empty(l) == 1);
+     assert(is_empty_lista(l) == 1);
 
     free_lista(l, free_teste_data);
 
@@ -286,9 +285,9 @@ void test_remove_all_if_completo() {
     assert(removidos == 3);
     assert(get_tam_lista(l) == 2);
 
-    TesteData *first = (TesteData*)get_index(l, 0);
+    TesteData *first = (TesteData*)get_data_index(l, 0);
     assert(first->id == 1);
-    TesteData *second = (TesteData*)get_index(l, 1);
+    TesteData *second = (TesteData*)get_data_index(l, 1);
     assert(second->id == 3);
 
     free_lista(l, free_teste_data);
@@ -303,7 +302,7 @@ void test_clear_lista() {
     for (int i = 0; i < 3; i++) {
         TesteData *td = malloc(sizeof(TesteData));
         td->id = i;
-        snprintf(td->nome, 20, "Item%d", i);
+        snprintf(td[i].nome, 20, "Item%d", i);
         insert_tail(l, td);
     }
 
@@ -311,7 +310,7 @@ void test_clear_lista() {
 
     clear_lista(l, free_teste_data);
     assert(get_tam_lista(l) == 0);
-    assert(is_empty(l) == 1);
+    assert(is_empty_lista(l) == 1);
 
     TesteData *new_td = malloc(sizeof(TesteData));
     new_td->id = 100;
@@ -319,7 +318,7 @@ void test_clear_lista() {
     insert_head(l, new_td);
 
     assert(get_tam_lista(l) == 1);
-    assert(((TesteData*)get_head(l))->id == 100);
+    assert(((TesteData*)get_head_data(l))->id == 100);
 
     free_lista(l, free_teste_data);
     printf("✓ Clear lista OK\n");
@@ -348,11 +347,11 @@ void test_remove_all_if() {
     assert(removidos == 3);
     assert(get_tam_lista(l) == 3);
 
-    TesteData *first = (TesteData*)get_index(l, 0);
+    TesteData *first = (TesteData*)get_data_index(l, 0);
     assert(first->id == 1);
-    TesteData *second = (TesteData*)get_index(l, 1);
+    TesteData *second = (TesteData*)get_data_index(l, 1);
     assert(second->id == 3);
-    TesteData *third = (TesteData*)get_index(l, 2);
+    TesteData *third = (TesteData*)get_data_index(l, 2);
     assert(third->id == 5);
 
     printf("Lista após remoção dos pares: ");
@@ -365,7 +364,7 @@ void test_remove_all_if() {
     assert(removidos == 2);
     assert(get_tam_lista(l) == 1);
 
-    TesteData *last = (TesteData*)get_index(l, 0);
+    TesteData *last = (TesteData*)get_data_index(l, 0);
     assert(last->id == 1);
 
     printf("Lista final: ");
