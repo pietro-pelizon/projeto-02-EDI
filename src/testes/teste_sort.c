@@ -1,7 +1,6 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include "../lista.h"
-#include "../sort.h"
 
 int compare_ints(void* a, void* b) {
     int int_a = *(int*)a;
@@ -25,28 +24,36 @@ void free_int_ptr(void *data) {
     free(data);
 }
 
-int main() {
+void teste_merge_sort() {
+    printf("\nTeste: merge_sort_lista (TAD lista)\n");
 
-    printf("===========================================\n");
-    printf("== Teste 1: insertion_sort_generico (Array)\n");
-    printf("===========================================\n");
+    lista *minha_lista  = init_lista();
 
-    int array[] = {8, 2, 5, 1, 10, 9, 3};
-    size_t num_elementos = sizeof(array) / sizeof(array[0]);
+    int valores[] = {8, 2, 5, 1, 10, 9, 3, 20, 39, 348, 10, 348, 47, 138, 1374, 1993, 0, 88, 38, -4, -3, -1};
+    size_t num_lista = sizeof(valores) / sizeof(valores[0]);
 
-    printf("Array ANTES:  ");
-    print_array(array, num_elementos);
+    for (size_t i = 0; i < num_lista; i++) {
+        int* dado = (int*)malloc(sizeof(int));
+        *dado = valores[i];
+        insert_tail(minha_lista, dado);
+    }
 
-    insertion_sort_generico(array, num_elementos, sizeof(int), compare_ints);
+    printf("Lista ANTES:  ");
+    print_lista(minha_lista, print_int_data);
+    printf("\n");
 
-    printf("Array DEPOIS: ");
-    print_array(array, num_elementos);
+    merge_sort_lista(minha_lista, compare_ints);
+
+    printf("Lista DEPOIS: ");
+    print_lista(minha_lista, print_int_data);
     printf("\n");
 
 
-    printf("===========================================\n");
-    printf("== Teste 2: insertion_sort_lista (TAD Lista)\n");
-    printf("===========================================\n");
+    free_lista(minha_lista, free_int_ptr);
+}
+
+void teste_insertion_sort() {
+    printf("Teste: insertion_sort_lista (TAD lista)\n");
 
     lista* minha_lista = init_lista();
 
@@ -70,6 +77,14 @@ int main() {
     printf("\n");
 
     free_lista(minha_lista, free_int_ptr);
+
+
+}
+
+int main() {
+
+    teste_insertion_sort();
+    teste_merge_sort();
 
     printf("\nTestes concluidos.\n");
 

@@ -15,6 +15,8 @@ typedef struct stLista {
     node *tail;
 } lista;
 
+// ========== FUNÇÕES BASE ==========
+
 lista *init_lista() {
     lista *l = malloc (sizeof(lista));
     if (l == NULL) {
@@ -127,35 +129,6 @@ void index_insert(lista *l, void *new_data, int index) {
 
 }
 
-void print_lista(lista *l, void (*print_data)(void *data)) {
-    if (l == NULL) {
-        printf("Ponteiro nulo passado para a funcao 'print_lista'\n");
-        return;
-    }
-
-    node *current = l -> head;
-    while (current != NULL) {
-        if (current -> data != NULL && print_data != NULL) {
-            print_data(current->data);
-        }
-
-        current = current -> next;
-    }
-}
-
-void *search_lista(lista *l, void *key, int (*compare)(void *a, void *b)) {
-    node *current = l -> head;
-    while (current != NULL) {
-        if (compare(key, current -> data) == 0) {
-            return current -> data;
-        }
-
-        current = current -> next;
-    }
-
-    return NULL;
-}
-
 void *remove_head(lista *l) {
     if (l == NULL) {
         return NULL;
@@ -248,31 +221,6 @@ void *remove_index(lista *l, int index) {
 
 }
 
-void *remove_first_data(lista *l, void *key, int (*compare)(void *a, void *b)) {
-    if (l == NULL) {
-        return NULL;
-    }
-
-    if (l -> tam == 0) {
-        printf("A lista está vazia! Nada a remover!\n");
-        return NULL;
-    }
-
-    node *current = l -> head;
-    int index = 0;
-      while (current != NULL) {
-        if (compare(key, current -> data) == 0) {
-            return remove_index(l, index);
-        }
-
-        current = current -> next;
-        index++;
-    }
-
-    printf("DEBUG: Elemento não encontrado na lista\n");
-    return NULL;
-}
-
 void free_lista(lista *l, void (*free_data)(void *data)) {
     if (l == NULL) {
         return;
@@ -292,6 +240,8 @@ void free_lista(lista *l, void (*free_data)(void *data)) {
 
     free(l);
 }
+
+// ========== FUNÇÕES GET ==========
 
 void *get_head_data(lista *l) {
     if (is_empty_lista(l)) {
@@ -423,6 +373,82 @@ node *get_tail_prev(lista *l) {
     return l -> tail -> prev;
 }
 
+// =========== FUNÇÕES AUXILIARES ===========
+
+void *remove_first_data(lista *l, void *key, int (*compare)(void *a, void *b)) {
+    if (l == NULL) {
+        return NULL;
+    }
+
+    if (l -> tam == 0) {
+        printf("A lista está vazia! Nada a remover!\n");
+        return NULL;
+    }
+
+    node *current = l -> head;
+    int index = 0;
+    while (current != NULL) {
+        if (compare(key, current -> data) == 0) {
+            return remove_index(l, index);
+        }
+
+        current = current -> next;
+        index++;
+    }
+
+    printf("DEBUG: Elemento não encontrado na lista\n");
+    return NULL;
+}
+
+int get_index(lista *l, node *n) {
+    if (l == NULL || n == NULL) {
+        return -1;
+    }
+
+    int i = 0;
+
+    node *aux = l -> head;
+    while (aux != NULL && aux != n) {
+        aux = go_next_node(aux);
+        i++;
+    }
+
+    if (aux == NULL) {
+        return -1;
+    }
+
+    return i;
+}
+
+void *search_lista(lista *l, void *key, int (*compare)(void *a, void *b)) {
+    node *current = l -> head;
+    while (current != NULL) {
+        if (compare(key, current -> data) == 0) {
+            return current -> data;
+        }
+
+        current = current -> next;
+    }
+
+    return NULL;
+}
+
+void print_lista(lista *l, void (*print_data)(void *data)) {
+    if (l == NULL) {
+        printf("Ponteiro nulo passado para a funcao 'print_lista'\n");
+        return;
+    }
+
+    node *current = l -> head;
+    while (current != NULL) {
+        if (current -> data != NULL && print_data != NULL) {
+            print_data(current->data);
+        }
+
+        current = current -> next;
+    }
+}
+
 void reverse_lista(lista *l) {
     if (l == NULL || l -> head == NULL) {
         return;
@@ -444,7 +470,6 @@ void reverse_lista(lista *l) {
     l->head = l->tail;
     l->tail = temp;
 }
-
 
 void clear_lista(lista *l, void (*free_data)(void *data)) {
     if (l == NULL) {
@@ -533,26 +558,6 @@ int contains(lista *l, void *key, int (*compare)(void *a, void *b)) {
     return false;
 }
 
-int get_index(lista *l, node *n) {
-    if (l == NULL || n == NULL) {
-        return -1;
-    }
-
-    int i = 0;
-
-    node *aux = l -> head;
-    while (aux != NULL && aux != n) {
-        aux = go_next_node(aux);
-        i++;
-    }
-
-    if (aux == NULL) {
-        return -1;
-    }
-
-    return i;
-}
-
 void swap_node_data(node *n1, node *n2) {
     if (n1 == NULL || n2 == NULL) return;
 
@@ -580,7 +585,6 @@ lista *filter_lista(lista *l, int (*predicate)(void *data)) {
 
     return filtered_lista;
 }
-
 
 void map_lista(lista *l, void (*transform)(void *data)) {
     if (l == NULL || is_empty_lista(l) || transform == NULL) return;
@@ -627,4 +631,126 @@ int remove_all_if(lista *l, int (*predicate)(void *data), void (*free_data)(void
     }
 
     return removidos;
+}
+
+// =========== FUNÇÕES DE ORDENAÇÃO PARA LISTA ==========
+
+void insertion_sort_lista(lista *l, int (*cmp_data)(void *a, void *b)) {
+    if (is_empty_lista(l) || get_tam_lista(l) <= 1) {
+        return;
+    }
+
+    node *node_i = l -> head -> next;
+
+
+    while (node_i != NULL) {
+        node *node_j = node_i;
+        node *j_prev = node_j -> prev;
+
+        node *next_i = node_i -> next;
+
+
+        while (j_prev != NULL && cmp_data(j_prev -> data, node_j -> data) > 0) {
+            swap_node_data(j_prev, node_j);
+            node_j = j_prev;
+            j_prev = node_j -> prev;
+        }
+
+        node_i = next_i;
+    }
+}
+
+static node *get_middle_lista(node *head) {
+    node *slow = head;
+    node *fast = head -> next;
+
+    while (fast && fast -> next) {
+        slow = slow -> next;
+        fast = fast -> next -> next;
+    }
+
+    return slow;
+}
+
+static node *merge_nodes(node *right, node *left, int (*cmp)(void *a, void *b)) {
+    if (left == NULL) {
+        return right;
+    }
+
+    if (right == NULL) {
+        return left;
+    }
+
+    node *final_head = NULL;
+
+    if (cmp(left -> data, right -> data) <= 0) {
+        final_head = left;
+        left = left -> next;
+    } else {
+        final_head = right;
+        right = right -> next;
+    }
+
+    final_head -> prev = NULL;
+
+    node *tail = final_head;
+
+
+    while (left != NULL && right != NULL) {
+        if (cmp(left -> data, right -> data) <= 0) {
+            tail -> next = left;
+            left -> prev = tail;
+            tail = left;
+            left = left -> next;
+        } else {
+            tail -> next = right;
+            right -> prev = tail;
+            tail = right;
+            right = right -> next;
+        }
+    }
+
+    if (left != NULL) {
+        tail -> next = left;
+        left -> prev = tail;
+    } else if (right != NULL) {
+        tail -> next = right;
+        right -> prev = tail;
+    }
+
+    return final_head;
+}
+
+static node *recursive_sort(node *head, int (*cmp)(void *a, void *b)) {
+    if (head == NULL || head -> next == NULL) return head;
+
+    node *mid = get_middle_lista(head);
+    node *right_head = mid -> next;
+
+    mid -> next = NULL;
+
+    if (right_head != NULL) {
+        right_head -> prev = NULL;
+    }
+
+    node *sorted_left = recursive_sort(head, cmp);
+    node *sorted_right = recursive_sort(right_head, cmp);
+
+    return merge_nodes(sorted_left, sorted_right, cmp);
+}
+
+void merge_sort_lista(lista *l, int (*cmp)(void *a, void *b)) {
+    if (l == NULL || l -> tam <= 1) return;
+    l -> head = recursive_sort(l -> head, cmp);
+
+    node *tail = l -> head;
+
+    if (tail != NULL) {
+        while (tail -> next != NULL) {
+            tail = tail -> next;
+        }
+    }
+
+    l -> tail = tail;
+
 }

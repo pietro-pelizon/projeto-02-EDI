@@ -199,4 +199,14 @@ int get_index(lista *l, node *n);
 /// @param n2 Nó 2
 void swap_node_data(node *n1, node *n2);
 
+/// @brief Usa insertion sort para ordenar uma lista
+/// @param l Ponteiro para a lista a ser ordenada
+/// @param cmp_data Função que sabe como comparar o dado contido na lista
+void insertion_sort_lista(lista *l, int (*cmp_data)(void *a, void *b));
+
+/// @brief Ordena uma lista utilizando o algoritmo de Merge Sort
+/// @param l Ponteiro para a lista a ser ordenada
+/// @param cmp Função que definirá o parâmetro de comparação do dado
+void merge_sort_lista(lista *l, int (*cmp)(void *a, void *b));
+
 #endif //LISTA_H
