@@ -302,7 +302,7 @@ void test_clear_lista() {
     for (int i = 0; i < 3; i++) {
         TesteData *td = malloc(sizeof(TesteData));
         td->id = i;
-        snprintf(td[i].nome, 20, "Item%d", i);
+        snprintf(td -> nome, 20, "Item%d", i);
         insert_tail(l, td);
     }
 
