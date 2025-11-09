@@ -1,7 +1,7 @@
 #ifndef FORMAS_H
 #define FORMAS_H
 #include <stdio.h>
-
+#include "lista.h"
 
 /*
  * ------- TAD FORMAS -------
