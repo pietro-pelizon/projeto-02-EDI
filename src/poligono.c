@@ -96,8 +96,16 @@ lista* get_segmentos(poligono* p) {
 lista *get_lista_vertices(poligono *p) {
     if (p == NULL || p -> vertices == NULL) return NULL;
 
-    return p -> vertices;
+    lista *copy = init_lista();
+    int n = get_num_vertices(p);
+    for (int i = 0; i < n; i++) {
+        ponto *pN = get_vertice(p, i);
+        if (pN != NULL) {
+            insert_tail(copy, pN);
+        }
+    }
 
+    return copy;
 }
 
 void calcular_bounding_Box(poligono* p) {
@@ -126,25 +134,8 @@ void calcular_bounding_Box(poligono* p) {
     p -> bbox_valida = true;
 }
 
-void get_bounding_box(poligono *p, double *xMin, double *xMax,
-                    double *yMin, double *yMax) {
-    if (p == NULL || p -> num_vertices == 0) return;
-
-    if (!p -> bbox_valida) {
-        calcular_bounding_Box(p);
-    }
-
-    if (xMin) *xMin = p -> xMin;
-    if (xMax) *xMax = p -> xMax;
-    if (yMin) *yMin = p -> yMin;
-    if (yMax) *yMax = p -> yMax;
-}
-
-bool is_inside(poligono* p, ponto* pt) {
-    if (p == NULL || pt == NULL || p -> num_vertices < 3) return false;
-
-    double px = get_x_ponto(pt);
-    double py = get_y_ponto(pt);
+bool is_inside(poligono* p, double px, double py) {
+    if (p == NULL || p -> num_vertices < 3) return false;
 
     if (!p -> bbox_valida) {
         calcular_bounding_Box(p);
@@ -155,7 +146,6 @@ bool is_inside(poligono* p, ponto* pt) {
     }
 
     int intersecoes = 0;
-
     node *no1 = get_head_node(p -> vertices);
     ponto *p1 = get_node_data(no1);
 
@@ -164,7 +154,6 @@ bool is_inside(poligono* p, ponto* pt) {
         if (no2 == NULL) no2 = get_head_node(p -> vertices);
 
         ponto* p2 = get_node_data(no2);
-
         double x1 = get_x_ponto(p1);
         double y1 = get_y_ponto(p1);
         double x2 = get_x_ponto(p2);
@@ -176,23 +165,11 @@ bool is_inside(poligono* p, ponto* pt) {
                 intersecoes++;
             }
         }
-
         no1 = no2;
         p1 = p2;
     }
 
     return (intersecoes % 2) == 1;
-}
-
-bool is_inside_XY(poligono* p, double x, double y) {
-    if (p == NULL) return false;
-
-    ponto* temp = init_ponto(x, y);
-
-    bool resultado = is_inside(p, temp);
-
-    free_ponto(temp);
-    return resultado;
 }
 
 void free_poligono(poligono* p) {

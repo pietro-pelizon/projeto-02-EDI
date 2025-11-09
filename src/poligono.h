@@ -45,7 +45,7 @@ lista* get_segmentos(poligono* p);
 
 /// @brief Obtém um ponteiro para a lista interna de vértices do polígono
 /// @param p O polígono
-/// @return Um ponteiro para o lista de vértices
+/// @return Retorna uma cópia da lista de vértices do polígono
 lista *get_lista_vertices(poligono *p);
 
 /// @brief (Re)calcula a Bounding Box do polígono
@@ -62,16 +62,10 @@ void get_bounding_box(poligono *p, double *xMin, double *xMax, double *yMin, dou
 
 /// @brief Verifica se um ponto está dentro da área do polígono
 /// @param p O polígono
-/// @param pt O ponto a ser verificado
+/// @param px Coordenada X do ponto
+/// @param py Coordenada Y  do ponto
 /// @return true se o ponto estiver dentro, false caso contrário
-bool is_inside(poligono* p, ponto* pt);
-
-/// @brief Verifica se as coordenadas (x, y) estão dentro da área do polígono
-/// @param p O polígono
-/// @param x A coordenada X a ser verificada
-/// @param y A coordenada Y a ser verificado
-/// @return true se o ponto (x,y) estiver dentro, false caso contrário
-bool is_inside_XY(poligono* p, double x, double y);
+bool is_inside(poligono* p, double px, double py);
 
 /// @brief Libera toda a memória associada ao polígono e seus vértices internos
 /// @param p O polígono a ser liberado
