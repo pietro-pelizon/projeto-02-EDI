@@ -1,7 +1,6 @@
 #include "svg.h"
 
 #include <stdio.h>
-#include "fila.h"
 #include "formas.h"
 
 FILE* inicializaSvg(const char* caminhoArquivo) {
@@ -93,6 +92,20 @@ void insereTexto(FILE *svg, texto *t) {
 	}
 
 	fprintf(svg, ">%s</text>\n", getTxtoTexto(t));
+}
+
+void insere_bounding_box(FILE *svg, poligono *p) {
+	if (p == NULL || svg == NULL) return;
+
+	double xMin, xMax, yMin, yMax;
+
+	get_bounding_box(p, &xMin, &xMax, &yMin, &yMax);
+
+	double largura = xMax - xMin;
+	double altura = yMax - yMin;
+
+	fprintf(svg, "\t<rect x=\"%lf\" y=\"%lf\" width=\"%lf\" height=\"%lf\" "
+				 "fill=\"none\" stroke=\"red\" stroke-dasharray=\"5,5\" stroke-width=\"1.5\" />\n", xMin, yMin, largura, altura);
 }
 
 void fechaSVG(FILE *svg) {

@@ -7,6 +7,7 @@
 #include "linha.h"
 #include "texto.h"
 #include "lista.h"
+#include "poligono.h"
 
 /*
  * ------- MÓDULO DE SAÍDA SVG -------
@@ -53,6 +54,11 @@ void insereTexto(FILE *svg, texto *t);
 /// @param svg: Ponteiro para o arquivo SVG aberto para escrita.
 /// @param l: Ponteiro para a struct 'linha' com os dados a serem desenhados.
 void insereLinha(FILE *svg, linha *l);
+
+/// @brief Desenha no svg a bounding box do polígono
+/// @param svg Ponteiro para o arquivo SVG aberto para escrita
+/// @param p Ponteiro para o polígono que contém os números da bounding box
+void insere_bounding_box(FILE *svg, poligono *p);
 
 /// @brief: Finaliza e fecha o arquivo SVG.
 /// @param svg: Ponteiro para o arquivo SVG a ser fechado.
