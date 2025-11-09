@@ -57,6 +57,7 @@ static node_bst *create_node(void *data) {
 static node_bst *insert_bst(arvore *t, node_bst *node, void *data) {
     if (node == NULL) {
         node_bst *new_node = create_node(data);
+        t -> tamanho++;
         return new_node;
     }
 
@@ -70,10 +71,13 @@ static node_bst *insert_bst(arvore *t, node_bst *node, void *data) {
         node -> direita = insert_bst(t, node -> direita, data);
     }
 
-    printf("DEBUG: Dado duplicado não inserido.\n");
-    if (t -> free_data != NULL) {
-        t -> free_data(data);
+    else {
+        printf("DEBUG: Dado duplicado não inserido.\n");
+        if (t -> free_data != NULL) {
+            t -> free_data(data);
+        }
     }
+
 
     return node;
 
@@ -83,3 +87,4 @@ void arvore_insere(arvore *t, void *data) {
     t -> root = insert_bst(t, t -> root, data);
     t -> tamanho++;
 }
+
