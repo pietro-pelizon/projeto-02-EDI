@@ -52,6 +52,11 @@ int getIDforma(forma *f);
 /// @return: Tipo da forma.
 tipoForma getTipoForma(forma *f);
 
+/// @brief Define um novo tipo para a forma
+/// @param f Ponteiro para a forma
+/// @param novo Novo tipo
+void set_tipo(forma *f, tipoForma novo);
+
 /// @brief: Pega e retorna os dados da forma.
 /// @param f: Ponteiro para a forma.
 /// @return: Ponteiro para os dados da forma.
@@ -125,7 +130,7 @@ void desenhaFormaSvg(forma *f, FILE *svg);
 /// @param f: Ponteiro para a forma.
 /// @param txt: Arquivo .txt aonde as informações serão escritas.
 /// @param reportDaFuncaoQRY: Começo padrão que será adicionado conforme a função do .qry.
-void escreveDadosFormaTxt(forma *f, FILE *txt, char *reportDaFuncaoQRY);
+void escreveDadosFormaTxt(forma *f, FILE *txt, const char *reportDaFuncaoQRY);
 
 /// @brief: Obtém a coordenada X principal (âncora) de uma forma genérica.
 /// @param f: Ponteiro para a forma genérica.

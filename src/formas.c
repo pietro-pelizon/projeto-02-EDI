@@ -73,7 +73,8 @@ char *getCorpForma(forma *f) {
 	switch (tipo) {
 		case CIRCULO: return getCorpCirculo(dados);
 		case RETANGULO: return getCorpRetangulo(dados);
-		case LINHA: return getCorLinha(dados);
+		case LINHA:
+		case ANTEPARO: return getCorLinha(dados);
 		case TEXTO: return getCorpTexto(dados);
 		default: return NULL;
 
@@ -89,7 +90,8 @@ void setCorpFormas(forma *f, char *novaCor) {
 	switch (tipo) {
 		case CIRCULO: setCorpCirculo(dados, novaCor); break;
 		case RETANGULO: setCorpRetangulo(dados, novaCor); break;
-		case LINHA: setCorLinha(dados, novaCor); break;
+		case LINHA:
+			case ANTEPARO: setCorLinha(dados, novaCor); break;
 		case TEXTO: setCorpTexto(dados, novaCor); break;
 		default: break;
 	}
@@ -104,7 +106,8 @@ void setCorbFormas(forma *f, char *novaCor) {
 	switch (tipo) {
 		case CIRCULO: setCorbCirculo(dados, novaCor); break;
 		case RETANGULO: setCorbRetangulo(dados, novaCor); break;
-		case LINHA: setCorLinha(dados, novaCor); break;
+		case LINHA:
+		case ANTEPARO: setCorLinha(dados, novaCor); break;
 		case TEXTO: setCorbTexto(dados, novaCor); break;
 		default: break;
 	}
@@ -230,7 +233,6 @@ void alterna_cores_entre_formas(forma *f1, forma *f2) {
 	free(copia_preenchimento_f1);
 }
 
-
 double getAreaForma(forma *f) {
 	if (f == NULL) {
 		return 0.0;
@@ -239,7 +241,8 @@ double getAreaForma(forma *f) {
 	switch (f -> tipo) {
 		case CIRCULO: return calcAreaCirculo(f -> dados);
 		case RETANGULO: return calcAreaRetangulo(f -> dados);
-		case LINHA: return calcAreaLinha(f -> dados);
+		case LINHA:
+		case ANTEPARO: return calcAreaLinha(f -> dados);
 		case TEXTO: return calcAreaTexto(f -> dados);
 		default: break;
 	}
@@ -287,7 +290,8 @@ void setPosicaoForma(forma *f, double x, double y) {
 			break;
 		}
 
-		case LINHA: {
+		case LINHA:
+		case ANTEPARO: {
 			linha *l = (linha*) f -> dados;
 
 			double x1Antigo = getX1Linha(l);
@@ -317,20 +321,21 @@ void setPosicaoForma(forma *f, double x, double y) {
 	}
 }
 
-// void desenhaFormaSvg(forma *f, FILE *svg) {
-// 	tipoForma tipo = getTipoForma(f);
-// 	void *dados = getFormaDados(f);
-//
-// 	switch (tipo) {
-// 		case CIRCULO: insereCirculo(svg, (circulo*)dados); break;
-// 		case RETANGULO: insereRetangulo(svg, (retangulo*)dados); break;
-// 		case LINHA: insereLinha(svg, (linha*)dados); break;
-// 		case TEXTO:  insereTexto(svg, (texto*)dados); break;
-// 		default: break;
-// 	}
-// }
+void desenhaFormaSvg(forma *f, FILE *svg) {
+	tipoForma tipo = getTipoForma(f);
+	void *dados = getFormaDados(f);
 
-void escreveDadosFormaTxt(forma *f, FILE *txt, char *reportDaFuncaoQRY) {
+	switch (tipo) {
+		case CIRCULO: insereCirculo(svg, (circulo*)dados); break;
+		case RETANGULO: insereRetangulo(svg, (retangulo*)dados); break;
+		case LINHA:
+		case ANTEPARO: insereLinha(svg, (linha*)dados); break;
+		case TEXTO:  insereTexto(svg, (texto*)dados); break;
+		default: break;
+	}
+}
+
+void escreveDadosFormaTxt(forma *f, FILE *txt, const char *reportDaFuncaoQRY) {
     tipoForma tipo = getTipoForma(f);
     void* dados = getFormaDados(f);
 
@@ -362,7 +367,8 @@ void escreveDadosFormaTxt(forma *f, FILE *txt, char *reportDaFuncaoQRY) {
             break;
         }
 
-        case LINHA: {
+        case LINHA:
+    	case ANTEPARO: {
             fprintf(txt, "%s\n Linha\n ID: %i\n Âncora de início em: (%.2lf, %.2lf)\n Âncora de fim em: (%.2lf, %.2lf)\n Cor: %s\n",
                 report_safe,
                 getIDforma(f),
@@ -417,7 +423,8 @@ double getXForma(forma *f) {
 		case CIRCULO: return getXCirculo(dados);
 		case RETANGULO: return getXretangulo(dados);
 		case TEXTO: return getXTexto(dados);
-		case LINHA: return getX1Linha(dados);
+		case LINHA:
+		case ANTEPARO: return getX1Linha(dados);
 		default: return 0.0;
 	}
 }
@@ -434,7 +441,8 @@ double getYForma(forma *f) {
 		case CIRCULO: return getYCirculo(dados);
 		case RETANGULO: return getYretangulo(dados);
 		case TEXTO: return getYTexto(dados);
-		case LINHA: return getY1Linha(dados);
+		case LINHA:
+		case ANTEPARO: return getY1Linha(dados);
 		default: return 0.0;
 	}
 }
@@ -469,7 +477,8 @@ lista *forma_anteparo(forma *f, char orientacao) {
 			break;
 		}
 
-		case LINHA: {
+		case LINHA:
+		case ANTEPARO: {
 			linha *copia = copia_linha(dados);
 			forma *criada = criaForma(id_anteparo, ANTEPARO, copia);
 			insert_tail(anteparos, criada);
