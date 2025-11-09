@@ -111,15 +111,15 @@ void testar_poligono_is_inside() {
     insert_vertice(p, 10.0, 10.0);
     insert_vertice(p, 0.0, 10.0);
 
-    print_teste_status(is_inside_XY(p, 5.0, 5.0) == true, "is_inside (ponto central)");
+    print_teste_status(is_inside(p, 5.0, 5.0) == true, "is_inside (ponto central)");
 
-    print_teste_status(is_inside_XY(p, 100.0, 100.0) == false, "is_inside (ponto fora - BBox)");
+    print_teste_status(is_inside(p, 100.0, 100.0) == false, "is_inside (ponto fora - BBox)");
 
-    print_teste_status(is_inside_XY(p, -5.0, 5.0) == false, "is_inside (ponto fora - adjacente)");
+    print_teste_status(is_inside(p, -5.0, 5.0) == false, "is_inside (ponto fora - adjacente)");
 
-    print_teste_status(is_inside_XY(p, 5.0, 10.0) == false, "is_inside (ponto na borda horizontal)");
-    print_teste_status(is_inside_XY(p, 10.0, 5.0) == false, "is_inside (ponto na borda vertical)");
-    print_teste_status(is_inside_XY(p, 0.0, 0.0) == false, "is_inside (ponto no vértice)");
+    print_teste_status(is_inside(p, 5.0, 10.0) == false, "is_inside (ponto na borda horizontal)");
+    print_teste_status(is_inside(p, 10.0, 5.0) == false, "is_inside (ponto na borda vertical)");
+    print_teste_status(is_inside(p, 0.0, 0.0) == false, "is_inside (ponto no vértice)");
 
     free_poligono(p);
 }
@@ -179,7 +179,6 @@ int main() {
     } else {
         printf(">>> FALHA: %d teste(s) falharam.\n", g_falhas);
     }
-    printf(">>> (Recomendado: executar com Valgrind para checar memory leaks)\n");
 
     return g_falhas;
 }
