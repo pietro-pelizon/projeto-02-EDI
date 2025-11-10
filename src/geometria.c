@@ -9,8 +9,7 @@ double calcula_angulo(ponto *obs, ponto *principal) {
     double p_x = get_x_ponto(principal);
     double p_y = get_y_ponto(principal);
 
-    double rad = atan2(p_y - obs_y, p_x - obs_x);
-    return rad * (180/PI);
+    return atan2(p_y - obs_y, p_x - obs_x);
 }
 
 double distancia_quadrada(double x1, double y1, double x2, double y2) {
