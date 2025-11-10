@@ -3,10 +3,12 @@
 #include "retangulo.h"
 #include "linha.h"
 #include "texto.h"
-#define EPSILON 1e-10
-#include <math.h>
 #include "formas.h"
 #include "poligono.h"
+#include "geometria.h"
+
+#include <math.h>
+#define EPSILON 1e-10
 
 static bool sobrepoe_circulo_poligono(circulo *c, poligono *p);
 static bool sobrepoe_retangulo_poligono(retangulo *r, poligono *p);
@@ -27,22 +29,6 @@ bool forma_sobrepoe_poligono(forma *f, poligono *p) {
         case TEXTO: return sobrepoe_texto_poligono((texto*)dados_forma, p);
         default: return false;
     }
-}
-
-static double distancia_quadrada(double x1, double y1, double x2, double y2) {
-    double deltaX = x1 - x2;
-    double deltaY = y1 - y2;
-    return (deltaX * deltaX) + (deltaY * deltaY);
-}
-
-static int orientacao(double px, double py, double qx, double qy, double rx, double ry) {
-    double val = (qx - px) * (ry - py) - (qy - py) * (rx - px);
-    if (fabs(val) < EPSILON) return 0;
-    return (val > 0) ? 1 : 2;
-}
-
-static bool pontoEstaNoSegmento(double px, double py, double qx, double qy, double rx, double ry) {
-    return (qx <= fmax(px, rx) && qx >= fmin(px, rx) && qy <= fmax(py, ry) && qy >= fmin(py, ry));
 }
 
 static bool ponto_dentro_retangulo(retangulo *r, ponto *pt) {
@@ -116,19 +102,19 @@ static bool sobrepoe_linha_linha(linha *l1, linha *l2) {
     double l2x2 = getX2Linha(l2);
     double l2y2 = getY2Linha(l2);
 
-    int o1 = orientacao(l1x1, l1y1, l1x2, l1y2, l2x1, l2y1);
-    int o2 = orientacao(l1x1, l1y1, l1x2, l1y2, l2x2, l2y2);
-    int o3 = orientacao(l2x1, l2y1, l2x2, l2y2, l1x1, l1y1);
-    int o4 = orientacao(l2x1, l2y1, l2x2, l2y2, l1x2, l1y2);
+    int o1 = produto_vetorial(l1x1, l1y1, l1x2, l1y2, l2x1, l2y1);
+    int o2 = produto_vetorial(l1x1, l1y1, l1x2, l1y2, l2x2, l2y2);
+    int o3 = produto_vetorial(l2x1, l2y1, l2x2, l2y2, l1x1, l1y1);
+    int o4 = produto_vetorial(l2x1, l2y1, l2x2, l2y2, l1x2, l1y2);
 
     if (o1 != o2 && o3 != o4) {
         return true;
     }
 
-    if (o1 == 0 && pontoEstaNoSegmento(l1x1, l1y1, l2x1, l2y1, l1x2, l1y2)) return true;
-    if (o2 == 0 && pontoEstaNoSegmento(l1x1, l1y1, l2x2, l2y2, l1x2, l1y2)) return true;
-    if (o3 == 0 && pontoEstaNoSegmento(l2x1, l2y1, l1x1, l1y1, l2x2, l2y2)) return true;
-    if (o4 == 0 && pontoEstaNoSegmento(l2x1, l2y1, l1x2, l1y2, l2x2, l2y2)) return true;
+    if (o1 == 0 && is_ponto_no_segmento(l1x1, l1y1, l2x1, l2y1, l1x2, l1y2)) return true;
+    if (o2 == 0 && is_ponto_no_segmento(l1x1, l1y1, l2x2, l2y2, l1x2, l1y2)) return true;
+    if (o3 == 0 && is_ponto_no_segmento(l2x1, l2y1, l1x1, l1y1, l2x2, l2y2)) return true;
+    if (o4 == 0 && is_ponto_no_segmento(l2x1, l2y1, l1x2, l1y2, l2x2, l2y2)) return true;
 
     return false;
 
@@ -184,17 +170,24 @@ static bool sobrepoe_retangulo_linha(retangulo *r, linha *l) {
 static bool sobrepoe_retangulo_poligono(retangulo *r, poligono *p) {
     double x = getXretangulo(r);
     double y = getYretangulo(r);
+    double w = getLarguraRetangulo(r);
+    double h = getAlturaRetangulo(r);
 
-    if (is_inside_XY(p, x, y)) {
+    if (is_inside(p, x, y) || is_inside(p, x + w, y) || is_inside(p, x + w, y +h) || is_inside(p, x, y +h)) {
         return true;
     }
 
-    ponto *v0 = get_vertice(p, 0);
-    if (ponto_dentro_retangulo(r, v0)) {
-        free_ponto(v0);
-        return true;
+    int n_vertices = get_num_vertices(p);
+    for (int i = 0; i < n_vertices; i++) {
+        ponto *v = get_vertice(p, i);
+
+        bool inside = ponto_dentro_retangulo(r, v);
+        free_ponto(v);
+
+        if (inside) {
+            return true;
+        }
     }
-    free_ponto(v0);
 
     lista *bordas_poligonos = get_segmentos(p);
     node *no_borda = get_head_node(bordas_poligonos);
@@ -219,17 +212,22 @@ static bool sobrepoe_circulo_poligono(circulo *c, poligono *p) {
     double cx = getXCirculo(c);
     double cy = getYCirculo(c);
 
-    if (is_inside_XY(p, cx, cy)) {
+    if (is_inside(p, cx, cy)) {
         return true;
     }
 
-    ponto *v0 = get_vertice(p, 0);
+    int n_vertices = get_num_vertices(p);
+    for (int i = 0; i < n_vertices; i++) {
+        ponto *v = get_vertice(p, i);
 
-    if (ponto_dentro_circulo(c, v0)) {
-        free_ponto(v0);
-        return true;
+        bool inside = ponto_dentro_circulo(c, v);
+        free_ponto(v);
+
+        if (inside) {
+            return true;
+        }
     }
-    free_ponto(v0);
+
 
     lista *bordas_poligono = get_segmentos(p);
     node *no_borda = get_head_node(bordas_poligono);
@@ -251,10 +249,10 @@ static bool sobrepoe_circulo_poligono(circulo *c, poligono *p) {
 }
 
 static bool sobrepoe_linha_poligono(linha *l, poligono *p) {
-    if (is_inside_XY(p, getX1Linha(l), getY1Linha(l))) {
+    if (is_inside(p, getX1Linha(l), getY1Linha(l))) {
         return true;
     }
-    if (is_inside_XY(p, getX2Linha(l), getY2Linha(l))) {
+    if (is_inside(p, getX2Linha(l), getY2Linha(l))) {
         return true;
     }
 
@@ -276,7 +274,7 @@ static bool sobrepoe_linha_poligono(linha *l, poligono *p) {
     return intersecao;
 }
 
-bool sobrepoe_texto_poligono(texto *t, poligono *p) {
+static bool sobrepoe_texto_poligono(texto *t, poligono *p) {
     linha *temp_linha = converter_texto_para_linha(t);
 
     bool resultado = sobrepoe_linha_poligono(temp_linha, p);
