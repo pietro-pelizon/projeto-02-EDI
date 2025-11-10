@@ -5,6 +5,8 @@
 #include <string.h>
 #include <math.h>
 
+#include "anteparo.h"
+
 typedef struct stLinha {
 	int i;
 	double x1, y1, x2, y2;
@@ -143,28 +145,16 @@ void destrutorLinha(linha *l) {
 
 }
 
-linha *copia_linha(linha *original) {
-    if (original == NULL) {
-        return NULL;
-    }
+anteparo *linha_anteparo(linha *l) {
+    if (l == NULL) return NULL;
 
-    linha *copia = malloc(sizeof(linha));
-    if (copia == NULL) {
-        return NULL;
-    }
+	static int id_anteparo = 2000;
+	int novo_id = ++id_anteparo;
+	double x1 = getX1Linha(l);
+	double y1 = getY2Linha(l);
+	double x2 = getX2Linha(l);
+	double y2 = getX2Linha(l);
 
-    copia -> x1 = original -> x1;
-    copia -> y1 = original -> y1;
-    copia -> x2 = original -> x2;
-    copia -> y2 = original -> y2;
-
-    copia -> cor = malloc(strlen(original -> cor) + 1);
-    if (copia -> cor == NULL) {
-        free(copia);
-        return NULL;
-    }
-    strcpy(copia->cor, original -> cor);
-
-    return copia;
+	return init_anteparo(novo_id, x1, y1, x2, y2, getCorLinha(l));
 }
 

@@ -142,14 +142,15 @@ void destrutorRetangulo(retangulo *r) {
 lista *retangulo_anteparo(retangulo *r) {
     if (r == NULL) return NULL;
 
-    static int id_anteparo = 2000;
+    static int id_anteparo = 3000;
+	int novo_id = ++id_anteparo;
     lista *anteparos = init_lista();
 
-    linha *lados[4] = {
-        criaLinha(id_anteparo++, r->x, r->y, r->x + r->w, r->y, getCorbRetangulo(r), false),
-        criaLinha(id_anteparo++, r->x, r->y, r->x, r->y + r->h, getCorbRetangulo(r), false),
-        criaLinha(id_anteparo++, r->x + r->w, r->y, r->x + r->w, r->y + r->h, getCorbRetangulo(r), false),
-        criaLinha(id_anteparo++, r->x, r->y + r->h, r->x + r->w, r->y + r->h, getCorbRetangulo(r), false)
+    anteparo *lados[4] = {
+		init_anteparo(novo_id, r -> x, r -> y, r -> x + r -> w, r -> y, getCorbRetangulo(r)),
+		init_anteparo(novo_id, r -> x, r -> y, r -> x, r -> y + r -> h, getCorbRetangulo(r)),
+		init_anteparo(novo_id, r -> x + r -> w, r -> y, r -> x + r -> w, r -> y + r -> h, getCorbRetangulo(r)),
+		init_anteparo(novo_id, r -> x, r -> y + r -> h, r -> x + r -> w, r -> y + r -> h, getCorbRetangulo(r))
     };
 
     for (int i = 0; i < 4; i++) {

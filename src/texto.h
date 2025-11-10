@@ -189,9 +189,9 @@ estilo *criaCopiaEstilo(estilo *original);
 /// @param e: Ponteiro para o estilo a ser liberado.
 void destroiEstilo(estilo *e);
 
-/// @brief Transforma um texto em uma linha
+/// @brief Transforma um texto em um anteparo
 /// @param t Ponteiro para o texto
-/// @return Retorna uma linha já criada
-linha *converter_texto_para_linha(texto *t);
+/// @return Retorna um anteparo já criada
+anteparo *converter_texto_para_anteparo(texto *t);
 
 #endif //TEXTO_H

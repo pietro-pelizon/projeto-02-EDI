@@ -1,5 +1,6 @@
 #ifndef CIRCULO_H
 #define CIRCULO_H
+#include "anteparo.h"
 #include "linha.h"
 
 
@@ -102,10 +103,10 @@ double calcAreaCirculo(circulo *c);
 /// @param c: Ponteiro para o círculo a ser liberado
 void destrutorCirculo(circulo *c);
 
-/// @brief Transforma um círculo em uma linha
+/// @brief Transforma um círculo em um anteparo
 /// @param c Ponteiro para o círculo
-/// @param orientacao Determina se a linha será vertical ou horizontal
-/// @return Retorna a linha criada
-linha *circulo_anteparo(circulo *c, char orientacao);
+/// @param orientacao Determina se o anteparo será vertical ou horizontal
+/// @return Retorna o anteparo criado
+anteparo *circulo_anteparo(circulo *c, char orientacao);
 
 #endif //CIRCULO_H

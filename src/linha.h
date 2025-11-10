@@ -2,6 +2,8 @@
 #define LINHA_H
 #include <stdbool.h>
 
+#include "anteparo.h"
+
 
 /* ------- TAD LINHA -------
  * A Linha é um objeto, que contém os seguintes atributos:
@@ -120,8 +122,8 @@ double calcAreaLinha(linha *l);
 void destrutorLinha(linha *l);
 
 /// @brief Faz uma cópia da linha
-/// @param original Linha original
-/// @return Retorna um ponteiro para o para a cópia
-linha* copia_linha(linha *original);
+/// @param l Linha que será transformada em anteparo
+/// @return Retorna um ponteiro para o para o anteparo criado
+anteparo *linha_anteparo(linha *l);
 
 #endif //LINHA_H

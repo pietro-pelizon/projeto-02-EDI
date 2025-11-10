@@ -3,7 +3,10 @@
 #include <stdio.h>
 
 #include "circulo.h"
+
+#include "anteparo.h"
 #include "linha.h"
+#include "ponto.h"
 
 #define PI 3.14159265358
 
@@ -131,36 +134,30 @@ void destrutorCirculo(circulo *c) {
 	free(c);
 }
 
-linha *circulo_anteparo(circulo *c, char orientacao) {
+anteparo *circulo_anteparo(circulo *c, char orientacao) {
 	if (c == NULL) return NULL;
 
 	static int id_anteparo = 1000;
-	linha *anteparo = criaLinha(id_anteparo++, 0, 0, 0, 0, getCorpCirculo(c), false);
-	if (anteparo == NULL) {
-		return NULL;
-	}
+	int novo_id = ++id_anteparo;
 
 	switch (orientacao) {
 		case 'h': {
-			setX1Linha(anteparo, c -> x - c -> r);
-			setY1Linha(anteparo, c -> y);
-			setX2Linha(anteparo, c -> x + c -> r);
-			setY2Linha(anteparo, c -> y);
-			break;
+			return init_anteparo(novo_id, c -> x - c -> r,
+				c -> y,
+				c -> x + c -> r,
+				c -> y,
+				getCorbCirculo(c));
 		}
 
 		case 'v': {
-			setX1Linha(anteparo, c -> x );
-			setY1Linha(anteparo, c -> y - c -> r);
-			setX2Linha(anteparo, c -> x);
-			setY2Linha(anteparo, c -> y + c -> r);
-			break;
+			return init_anteparo(novo_id, c -> x,
+				c -> y - c -> r,
+				c -> x,
+				c -> y + c -> r, getCorbCirculo(c));
 		}
 		default: printf("Orientação inválida!\n");
-
 	}
-
-	return anteparo;
+	return NULL;
 }
 
 
