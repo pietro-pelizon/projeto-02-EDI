@@ -24,13 +24,13 @@
  */
 
 /// Identificador de tipo para as formas.
-typedef enum EnumtipoForma {
+typedef enum enum_tipo_forma {
     CIRCULO,
     RETANGULO,
     LINHA,
     TEXTO,
     ANTEPARO
-} tipoForma;
+} tipo_forma;
 
 
 typedef struct stForma forma;
@@ -40,32 +40,32 @@ typedef struct stForma forma;
 /// @param tipo: Tipo da forma.
 /// @param dados: Ponteiro para os dados da forma.
 /// @return: Retorna um ponteiro para a forma criada.
-forma *criaForma(int id, tipoForma tipo, void *dados);
+forma *cria_forma(int id, tipo_forma tipo, void *dados);
 
 /// @brief: Pega e retorna o ID da forma.
 /// @param f: Ponteiro para a forma.
 /// @return: ID da forma.
-int getIDforma(forma *f);
+int get_id_forma(forma *f);
 
 /// @brief: Pega o tipo da forma e o retorna.
 /// @param f: Ponteiro para a forma.
 /// @return: Tipo da forma.
-tipoForma getTipoForma(forma *f);
+tipo_forma get_tipo_forma(forma *f);
 
 /// @brief Define um novo tipo para a forma
 /// @param f Ponteiro para a forma
 /// @param novo Novo tipo
-void set_tipo(forma *f, tipoForma novo);
+void set_tipo(forma *f, tipo_forma novo);
 
 /// @brief: Pega e retorna os dados da forma.
 /// @param f: Ponteiro para a forma.
 /// @return: Ponteiro para os dados da forma.
-void *getFormaDados(forma *f);
+void *get_dados_forma(forma *f);
 
 /// @brief: Define um novo identificador para a forma.
 /// @param f: Ponteiro para a forma.
 /// @param novoID: Novo identificador.
-void setIDforma(forma *f, int novoID);
+void set_id_forma(forma *f, int novoID);
 
 /// @brief: Pega e retorna a cor de borda de uma forma genérica.
 /// @param f: Ponteiro para a forma.
@@ -75,37 +75,37 @@ char *getCorbForma(forma *f);
 /// @brief: Pega e retorna a cor de preenchimento de uma forma genérica.
 /// @param f: Ponteiro para a forma.
 /// @return: Cor de preenchimento de uma forma genérica.
-char *getCorpForma(forma *f);
+char *get_corp_forma(forma *f);
 
 /// @brief: Define uma nova cor de preenchimento para uma forma genérica.
 /// @param f: Ponteiro para a forma.
-/// @param novaCor: Nova cor de preenchimento para a forma genérica.
-void setCorpFormas(forma *f, char *novaCor);
+/// @param nova_cor: Nova cor de preenchimento para a forma genérica.
+void set_corp_formas(forma *f, char *nova_cor);
 
 /// @brief: Define uma nova cor de borda para uma forma genérica.
 /// @param f: Ponteiro para a forma.
-/// @param novaCor: Nova cor de borda da forma genérica.
-void setCorbFormas(forma *f, char *novaCor);
+/// @param nova_cor: Nova cor de borda da forma genérica.
+void set_corb_formas(forma *f, char *nova_cor);
 
 /// @brief: Clona uma forma, acrescentando 1 ao seu ID.
 /// @param f_original: Forma que será clonada;
 /// @return: Ponteiro para a forma clonada.
-forma *clonarForma(forma *f_original);
+forma *clona_forma(forma *f_original);
 
 /// @brief: Calcula a área da forma.
 /// @param f: Ponteiro a forma.
 /// @return: Retorna a área já calculada da área.
-double getAreaForma(forma *f);
+double get_area_forma(forma *f);
 
 /// @brief: Libera toda a forma e a destrói.
 /// @param f: Ponteiro para a forma.
-void destrutorForma(forma *f);
+void destrutor_forma(forma *f);
 
 /// @brief: Define a posição de uma forma genérica.
 /// @param f: Ponteiro para a forma genérica.
 /// @param x: Nova coordenada X.
 /// @param y: Nova coordenada Y.
-void setPosicaoForma(forma *f, double x, double y);
+void set_posicao_forma(forma *f, double x, double y);
 
 /// @brief: Faz o cálculo para obter a cor complementar de uma cor em hexadecimal.
 /// @param cor_hexa_original: A cor que terá sua cor complementar calculada.
@@ -124,7 +124,7 @@ void alterna_cores_forma(forma *f);
 /// @brief: Dado o tipo da forma, pega seus dados e a desenha em um arquivo svg.
 /// @param f: Ponteiro para a forma.
 /// @param svg: Ponteiro para o arquivo svg.
-void desenhaFormaSvg(forma *f, FILE *svg);
+void desenha_forma_svg(forma *f, FILE *svg);
 
 /// @brief: Dado o tipo da forma, pega seus dados e gera um relatório no arquivo txt.
 /// @param f: Ponteiro para a forma.
@@ -135,12 +135,12 @@ void escreveDadosFormaTxt(forma *f, FILE *txt, const char *reportDaFuncaoQRY);
 /// @brief: Obtém a coordenada X principal (âncora) de uma forma genérica.
 /// @param f: Ponteiro para a forma genérica.
 /// @return: O valor da coordenada X. Retorna 0.0 se a forma for nula ou inválida.
-double getXForma(forma *f);
+double get_x_forma(forma *f);
 
 /// @brief: Obtém a coordenada Y principal (âncora) de uma forma genérica.
 /// @param f: Ponteiro para a forma genérica.
 /// @return: O valor da coordenada Y. Retorna 0.0 se a forma for nula ou inválida.
-double getYForma(forma *f);
+double get_y_forma(forma *f);
 
 /// @brief Transforma uma forma genérica já transformada em um anteparo
 /// @param f Ponteiro para a forma

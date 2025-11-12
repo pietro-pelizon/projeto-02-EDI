@@ -18,15 +18,15 @@ static bool sobrepoe_texto_poligono(texto *t, poligono *p);
 bool forma_sobrepoe_poligono(forma *f, poligono *p) {
     if (f == NULL || p == NULL) return false;
 
-    tipoForma tipo = getTipoForma(f);
-    void *dados_forma = getFormaDados(f);
+    tipo_forma tipo = get_tipo_forma(f);
+    void *dados_forma = get_dados_forma(f);
 
     switch (tipo) {
         case CIRCULO: return sobrepoe_circulo_poligono((circulo*)dados_forma, p);
         case RETANGULO: return sobrepoe_retangulo_poligono((retangulo*)dados_forma, p);
-        case LINHA:
-        case ANTEPARO: return sobrepoe_linha_poligono((linha*)dados_forma, p);
+        case LINHA: return sobrepoe_linha_poligono((linha*)dados_forma, p);
         case TEXTO: return sobrepoe_texto_poligono((texto*)dados_forma, p);
+        case ANTEPARO: printf("Cálculo de sobreposição entre anteparos não faz sentido para a lógica do projeto!\n");
         default: return false;
     }
 }
@@ -55,7 +55,7 @@ static bool ponto_dentro_circulo(circulo *c, ponto *pt) {
     return distancia_quadrada(cx, cy, px, py) <= (r * r);
 }
 
-static bool sobrepoe_circulo_linhaOUtexto(circulo *c, linha *l) {
+static bool sobrepoe_circulo_linha_texto(circulo *c, linha *l) {
     double cx = getXCirculo(c);
     double cy = getYCirculo(c);
     double cr = getRaioCirculo(c);
@@ -236,7 +236,7 @@ static bool sobrepoe_circulo_poligono(circulo *c, poligono *p) {
     while (no_borda != NULL) {
         linha *borda = (linha*) get_node_data(no_borda);
 
-        if (sobrepoe_circulo_linhaOUtexto(c, borda)) {
+        if (sobrepoe_circulo_linha_texto(c, borda)) {
             intersecao = true;
             break;
         }
@@ -275,7 +275,7 @@ static bool sobrepoe_linha_poligono(linha *l, poligono *p) {
 }
 
 static bool sobrepoe_texto_poligono(texto *t, poligono *p) {
-    linha *temp_linha = converter_texto_para_linha(t);
+    linha *temp_linha = converter_texto_para_anteparo(t);
 
     bool resultado = sobrepoe_linha_poligono(temp_linha, p);
 

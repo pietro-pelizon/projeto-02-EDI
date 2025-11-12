@@ -81,9 +81,9 @@ lista* get_segmentos(poligono* p) {
         y2 = get_y_ponto(p2);
 
         static int id_segmentos = 9000;
-        id_segmentos++;
+        int novo_id = ++id_segmentos;
 
-        linha* seg = criaLinha(id_segmentos, x1, y1, x2, y2, "#000000", false);
+        linha* seg = criaLinha(novo_id, x1, y1, x2, y2, "#000000", false);
         insert_tail(segmentos, seg);
 
         atual = proximo;

@@ -33,27 +33,37 @@
 /// @brief: Cria, abre e inicializa um arquivo SVG com o cabeçalho padrão.
 /// @param caminhoArquivo: O nome/caminho do arquivo a ser criado.
 /// @return: Retorna um ponteiro para o arquivo (FILE*) pronto para escrita, ou NULL se ocorrer um erro.
-FILE* inicializaSvg(const char* caminhoArquivo);
+FILE* inicializa_svg(const char* caminhoArquivo);
 
 /// @brief: Desenha um retângulo no arquivo SVG.
 /// @param svg: Ponteiro para o arquivo SVG aberto para escrita.
 /// @param r: Ponteiro para a struct 'retangulo' com os dados a serem desenhados.
-void insereRetangulo(FILE *svg, retangulo *r);
+void insere_retangulo(FILE *svg, retangulo *r);
 
 /// @brief: Desenha um círculo no arquivo SVG.
 /// @param svg: Ponteiro para o arquivo SVG aberto para escrita.
 /// @param c: Ponteiro para a struct 'circulo' com os dados a serem desenhados.
-void insereCirculo(FILE *svg, circulo *c);
+void insere_circulo(FILE *svg, circulo *c);
 
 /// @brief: Escreve um objeto de texto no arquivo SVG.
 /// @param svg: Ponteiro para o arquivo SVG aberto para escrita.
 /// @param t: Ponteiro para a struct 'texto' que contém os dados a serem escritos.
-void insereTexto(FILE *svg, texto *t);
+void insere_texto(FILE *svg, texto *t);
 
 /// @brief: Desenha uma linha no arquivo SVG.
 /// @param svg: Ponteiro para o arquivo SVG aberto para escrita.
 /// @param l: Ponteiro para a struct 'linha' com os dados a serem desenhados.
-void insereLinha(FILE *svg, linha *l);
+void insere_linha(FILE *svg, linha *l);
+
+/// @brief Pega os segmentos do polígono e os desenha no arquivo .svg
+/// @param svg Ponteiro para o arquivo .svg
+/// @param p Ponteiro para o polígono
+void insere_poligono(FILE *svg, poligono *p);
+
+/// @brief Insere um anteparo em um arquivo do tipo .svg
+/// @param svg Ponteiro para o arquivo .svg
+/// @param a Ponteiro para o anteparo
+void insere_anteparo(FILE *svg, anteparo *a);
 
 /// @brief Desenha no svg a bounding box do polígono
 /// @param svg Ponteiro para o arquivo SVG aberto para escrita
@@ -62,7 +72,7 @@ void insere_bounding_box(FILE *svg, poligono *p);
 
 /// @brief: Finaliza e fecha o arquivo SVG.
 /// @param svg: Ponteiro para o arquivo SVG a ser fechado.
-void fechaSVG(FILE *svg);
+void fecha_svg(FILE *svg);
 
 /// @brief: Função auxiliar que recebe um dado e se possível, o desenha no arquivo .svg
 /// @param item: Dado a ser desenhado.
