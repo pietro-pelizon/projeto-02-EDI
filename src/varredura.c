@@ -25,13 +25,13 @@ typedef struct stSegmento_ativo {
     double dist_bomba;
 } segmento_ativo;
 
-void free_segmento_ativo(void *data) {
+static void free_segmento_ativo(void *data) {
     if (data) {
         free(data);
     }
 }
 
-int comparar_segmentos_ativos(const void *a, const void *b) {
+static int comparar_segmentos_ativos(const void *a, const void *b) {
     segmento_ativo *sa = (segmento_ativo*)a;
     segmento_ativo *sb = (segmento_ativo*)b;
 
@@ -118,7 +118,7 @@ void update_AVL_angulo(arvore *seg_ativo, double angulo, lista *info_seg) {
     }
 }
 
-void buscar_intersecao_avl_rec(node_AVL *node, ponto *bomba, double angulo, double *dist_min, ponto **ponto_intersecao) {
+static void buscar_intersecao_avl_rec(node_AVL *node, ponto *bomba, double angulo, double *dist_min, ponto **ponto_intersecao) {
     if (node == NULL || *ponto_intersecao != NULL) {
         return;
     }
@@ -183,4 +183,32 @@ double calc_dist_anteparo_bomba(anteparo *a, ponto *p_bomba, double angulo) {
     return dist;
 }
 
+void get_angulos_criticos(ponto *bomba, lista *anteparos, double **angulos, int *num_angulos) {
+    *num_angulos = 2 * get_tam_lista(anteparos);
+
+    *angulos = malloc (*num_angulos * sizeof(double));
+    if (*angulos == NULL) {
+        printf("DEBUG: Erro ao alocar memória para o array de ângulos!\n");
+        *num_angulos = 0;
+        return;
+    }
+
+    int index = 0;
+
+    node *atual  = get_head_node(anteparos);
+
+    while (atual != NULL) {
+        forma *f = get_node_data(atual);
+
+        anteparo *a = (anteparo*)get_dados_forma(f);
+
+        ponto *p0 = get_p0_anteparo(a);
+        ponto *p1 = get_p1_anteparo(a);
+
+        (*angulos)[index++] = calcula_angulo(bomba, p0);
+        (*angulos)[index++] = calcula_angulo(bomba, p1);
+
+        atual = go_next_node(atual);
+    }
+}
 
