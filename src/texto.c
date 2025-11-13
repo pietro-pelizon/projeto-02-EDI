@@ -261,7 +261,6 @@ void setATexto(texto *t, char a) {
 	t -> a = a;
 }
 
-
 void destroiEstilo(estilo *e) {
 	if (e == NULL) {
 		return;
@@ -358,3 +357,45 @@ anteparo *converter_texto_para_anteparo(texto *t) {
 	return l_out;
 }
 
+linha *converter_texto_para_linha(texto *t) {
+	double xt_ancora = getXTexto(t);
+	double yt_ancora = getYTexto(t);
+
+	char ancora_texto = getATexto(t);
+	int num_chars = getTamanhoTexto(t);
+
+	double comprimento = 10.0 * num_chars;
+	double tx1, ty1, tx2, ty2;
+	static int id_anteparo = 3000;
+	int novo_id = ++id_anteparo;
+	linha *l_out = criaLinha(novo_id, 0, 0, 0, 0, getCorpTexto(t), false);
+	ty1 = yt_ancora;
+	ty2 = yt_ancora;
+
+	switch (ancora_texto) {
+		case 'i':
+			tx1 = xt_ancora;
+			tx2 = xt_ancora + comprimento;
+			break;
+		case 'm':
+			tx1 = xt_ancora - (comprimento / 2.0);
+			tx2 = xt_ancora + (comprimento / 2.0);
+			break;
+		case 'f':
+			tx1 = xt_ancora - comprimento;
+			tx2 = xt_ancora;
+			break;
+		default:
+			tx1 = xt_ancora;
+			tx2 = xt_ancora;
+			break;
+	}
+
+	setX1Linha(l_out, tx1);
+	setY1Linha(l_out, ty1);
+	setX2Linha(l_out, tx2);
+	setY2Linha(l_out, ty2);
+
+	return l_out;
+
+}

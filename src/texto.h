@@ -194,4 +194,9 @@ void destroiEstilo(estilo *e);
 /// @return Retorna um anteparo já criada
 anteparo *converter_texto_para_anteparo(texto *t);
 
+/// @brief Converte um texto para uma linha conforme convenção do trabalho
+/// @param t Ponteiro para o texto
+/// @return Retorna uma linha criada
+linha *converter_texto_para_linha(texto *t);
+
 #endif //TEXTO_H
