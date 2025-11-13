@@ -26,9 +26,11 @@ bool forma_sobrepoe_poligono(forma *f, poligono *p) {
         case RETANGULO: return sobrepoe_retangulo_poligono((retangulo*)dados_forma, p);
         case LINHA: return sobrepoe_linha_poligono((linha*)dados_forma, p);
         case TEXTO: return sobrepoe_texto_poligono((texto*)dados_forma, p);
-        case ANTEPARO: printf("Cálculo de sobreposição entre anteparos não faz sentido para a lógica do projeto!\n");
+        case ANTEPARO: printf("Cálculo de sobreposição entre anteparos não faz sentido para a lógica do projeto!\n"); break;
         default: return false;
     }
+
+    return false;
 }
 
 static bool ponto_dentro_retangulo(retangulo *r, ponto *pt) {
@@ -275,7 +277,7 @@ static bool sobrepoe_linha_poligono(linha *l, poligono *p) {
 }
 
 static bool sobrepoe_texto_poligono(texto *t, poligono *p) {
-    linha *temp_linha = converter_texto_para_anteparo(t);
+    linha *temp_linha = converter_texto_para_linha(t);
 
     bool resultado = sobrepoe_linha_poligono(temp_linha, p);
 
