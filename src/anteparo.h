@@ -2,6 +2,7 @@
 #define PROJETO_02_EDI_ANTEPARO_H
 
 #include "anteparo.h"
+#include "lista.h"
 #include "ponto.h"
 
 typedef struct stAnteparo anteparo;
@@ -74,14 +75,5 @@ void set_p1_anteparo(anteparo *a, ponto *new_p1);
 /// @brief Libera toda a memória alocada para o anteparo
 /// @param a Ponteiro para o anteparo a ser liberado
 void free_anteparo(anteparo *a);
-
-/// @brief Calcula a distância entre a bomba e o ponto de interseção do raio com o anteparo
-/// @details Lança um raio da bomba em um ângulo específico e verifica se intercepta o anteparo.
-/// Utiliza interseção de linha-segmento para determinar o ponto de colisão.
-/// @param a Ponteiro para o anteparo
-/// @param p_bomba Ponto de origem da bomba
-/// @param angulo Ângulo do raio em radianos (0 = direita, π/2 = cima)
-/// @return Distância até o ponto de interseção, ou DBL_MAX se não houver interseção
-double calc_dist_anteparo_bomba(anteparo *a, ponto *p_bomba, double angulo);
 
 #endif
