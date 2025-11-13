@@ -70,7 +70,7 @@ void set_id_forma(forma *f, int novoID);
 /// @brief: Pega e retorna a cor de borda de uma forma genérica.
 /// @param f: Ponteiro para a forma.
 /// @return: Cor de borda da forma genérica.
-char *getCorbForma(forma *f);
+char *get_corb_forma(forma *f);
 
 /// @brief: Pega e retorna a cor de preenchimento de uma forma genérica.
 /// @param f: Ponteiro para a forma.

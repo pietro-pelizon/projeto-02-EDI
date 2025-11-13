@@ -202,7 +202,7 @@ void alterna_cores_forma(forma *f) {
 	if (f == NULL) return;
 
 
-	char *cor_borda = getCorbForma(f);
+	char *cor_borda = get_corb_forma(f);
 	char *cor_preenchimento = get_corp_forma(f);
 
 	if (cor_borda == NULL || cor_preenchimento == NULL) return;
@@ -229,7 +229,7 @@ void alterna_cores_entre_formas(forma *f1, forma *f2) {
 	}
 
 	char *cor_preenchimento_f1 = get_corp_forma(f1);
-	char *cor_borda_f2 = getCorbForma(f2);
+	char *cor_borda_f2 = get_corb_forma(f2);
 
 	if (cor_preenchimento_f1 == NULL || cor_borda_f2 == NULL) {
 		return;
@@ -427,6 +427,7 @@ void escreveDadosFormaTxt(forma *f, FILE *txt, const char *reportDaFuncaoQRY) {
 	        	get_x_p1(dados),
 	        	get_y_p1(dados),
 	        	get_cor_anteparo(dados));
+        	break;
         }
 
         default:
@@ -466,7 +467,7 @@ double get_y_forma(forma *f) {
 		case RETANGULO: return getYretangulo(dados);
 		case TEXTO: return getYTexto(dados);
 		case LINHA: return getY1Linha(dados);
-		case ANTEPARO: get_y_p0(dados);
+		case ANTEPARO: return get_y_p0(dados);
 		default: return 0.0;
 	}
 }

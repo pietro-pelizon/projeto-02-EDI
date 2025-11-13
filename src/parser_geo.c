@@ -1,5 +1,4 @@
 #include "parser_geo.h"
-#include "chao.h"
 #include "circulo.h"
 #include "linha.h"
 #include "retangulo.h"
@@ -83,7 +82,7 @@ static void processar_circulo(const char* linha, lista* lista_formas) {
     if (num_lidos < 4) return;
 
     circulo *c = criaCirculo(id, x, y, r, corb, corp);
-    forma *f = criaForma(id, CIRCULO, c);
+    forma *f = cria_forma(id, CIRCULO, c);
     insert_tail(lista_formas, f);
 }
 
@@ -96,7 +95,7 @@ static void processar_retangulo(const char* linha, lista* lista_formas) {
     if (num_lidos < 5) return;
 
     retangulo *r = criaRetangulo(id, x, y, w, h, corb, corp);
-    forma *f = criaForma(id, RETANGULO, r);
+    forma *f = cria_forma(id, RETANGULO, r);
     insert_tail(lista_formas, f);
 }
 
@@ -109,7 +108,7 @@ static void processar_linha(const char* linha_buffer, lista* lista_formas) {
     if (num_lidos < 5) return;
 
     linha *l = criaLinha(id, x1, y1, x2, y2, cor, false);
-    forma *f = criaForma(id, LINHA, l);
+    forma *f = cria_forma(id, LINHA, l);
     insert_tail(lista_formas, f);
 }
 
@@ -135,7 +134,7 @@ static void processar_texto(const char* linha_buffer, lista *lista_formas, estil
     texto *t = criaTexto(id, x, y, corb, corp, ancora, conteudo_texto, e_temp);
     destroiEstilo(e_temp);
 
-    forma *f = criaForma(id, TEXTO, t);
+    forma *f = cria_forma(id, TEXTO, t);
     if (f) {
         insert_tail(lista_formas, f);
     }
