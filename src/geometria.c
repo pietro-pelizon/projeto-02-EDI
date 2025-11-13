@@ -1,6 +1,7 @@
 #include "geometria.h"
 #include "linha.h"
 
+#define EPSILON 1e-10
 #define PI 3.14159265358
 
 double calcula_angulo(ponto *obs, ponto *principal) {
@@ -28,3 +29,29 @@ bool is_ponto_no_segmento(double px, double py, double qx, double qy, double rx,
     return (qx <= fmax(px, rx) && qx >= fmin(px, rx) && qy <= fmax(py, ry) && qy >= fmin(py, ry));
 }
 
+
+double calcular_distancia_ponto_segmento(ponto *p, anteparo *a) {
+    double px = get_x_ponto(p);
+    double py = get_y_ponto(p);
+    double x1 = get_x_ponto(get_p0_anteparo(a));
+    double y1 = get_y_ponto(get_p0_anteparo(a));
+    double x2 = get_x_ponto(get_p1_anteparo(a));
+    double y2 = get_y_ponto(get_p1_anteparo(a));
+
+    double dx = x2 - x1;
+    double dy = y2 - y1;
+
+    double len_sq = dx * dx + dy * dy;
+    if (fabs(len_sq) < EPSILON) {
+        return sqrt(distancia_quadrada(px, py, x1, y1));
+    }
+
+    double t = ((px - x1) * dx + (py - y1) * dy) / len_sq;
+
+    t = fmax(0.0, fmin(1.0, t));
+
+    double proj_x = x1 + t * dx;
+    double proj_y = y1 + t * dy;
+
+    return sqrt(distancia_quadrada(px, py, proj_x, proj_y));
+}

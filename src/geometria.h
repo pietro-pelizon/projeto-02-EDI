@@ -4,10 +4,12 @@
 #include <math.h>
 #include <stdbool.h>
 
+#include "anteparo.h"
+
 /// @brief Calcula o ângulo de determinado ponto em relação a outro
 /// @param obs Ponto de observação usado como referência para calcular o ângulo
 /// @param principal Ponto que está sendo observado para o cálculo do ângulo
-/// @return O ângulo calculado em graus
+/// @return O ângulo calculado em radianos
 double calcula_angulo(ponto *obs, ponto *principal);
 
 /// @brief Calcula a distância ao quadrado de determinado ponto até outro,
@@ -54,5 +56,11 @@ int produto_vetorial(double px, double py, double qx, double qy, double rx, doub
 /// @return true Se o ponto q está dentro do bounding box definido por p e r.
 /// @return false Caso contrário.
 bool is_ponto_no_segmento(double px, double py, double qx, double qy, double rx, double ry);
+
+/// @brief Calcula a distância entre um ponto e um segmento de reta
+/// @param p Ponteiro para o ponto
+/// @param a Segmento para o segmento de reta (anteparo)
+/// @return Retorna a distância
+double calcular_distancia_ponto_segmento(ponto *p, anteparo *a);
 
 #endif //PROJETO_02_EDI_GEOMETRIA_H
