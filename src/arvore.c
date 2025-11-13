@@ -58,6 +58,21 @@ static int get_fb(node_AVL *n) {
     return get_altura_node(n -> esquerda) - get_altura_node(n -> direita);
 }
 
+node_AVL *get_esquerda_node(node_AVL *n) {
+    if (n == NULL) return NULL;
+    return n -> esquerda;
+}
+
+node_AVL *get_direita_node(node_AVL *n) {
+    if (n == NULL) return NULL;
+    return n -> direita;
+}
+
+void *get_node_dataAVL(node_AVL *n) {
+    if (n == NULL) return NULL;
+    return n -> data;
+}
+
 bool is_empty_bst(arvore *bst) {
     if (bst -> tamanho == 0) {
         return true;

@@ -27,6 +27,21 @@ int get_altura_arvore(arvore *t);
 /// @return Tamanho total da árvore
 int get_tam_AVL(arvore *t);
 
+/// @brief Recebe um nó árvore como parâmetro e retorna o nó a esquerda dele
+/// @param n Ponteiro para o nó de referência
+/// @return Retorna o nó a esquerda desse nó
+node_AVL *get_esquerda_node(node_AVL *n);
+
+/// @brief Recebe um nó árvore como parâmetro e retorna o nó a direita dele
+/// @param n Ponteiro para o nó de referência
+/// @return Retorna o nó a direita desse nó
+node_AVL *get_direita_node(node_AVL *n);
+
+/// @brief Recebe um nó de árvore como parâmetro e retorna seu conteúdo interno
+/// @param n Ponteiro para o nó
+/// @return O conteúdo do nó
+void *get_node_dataAVL(node_AVL *n);
+
 /// @brief Verifica se uma árvore está vazia
 /// @param bst Ponteiro para a árvore binária de busca
 /// @return Retorna true caso a árvore esteja vazia e false caso o contrário
