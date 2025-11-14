@@ -94,18 +94,22 @@ void insere_texto(FILE *svg, texto *t) {
 	fprintf(svg, ">%s</text>\n", getTxtoTexto(t));
 }
 
-void insere_poligono(FILE *svg, poligono *p) {
-	if (svg == NULL || p == NULL) return;
+void insere_poligono_visibilidade(FILE *svg, poligono *p, const char *cor) {
+	if (p == NULL || svg == NULL) return;
 
-	lista *segmentos = get_segmentos(p);
+	int n = get_num_vertices(p);
+	if (n < 3) return;
 
-	for (node *current = get_head_node(segmentos); current != NULL; current = go_next_node(current)) {
-		linha *l = get_node_data(current);
+	fprintf(svg, "\t<polygon points=\"");
 
-		if (l != NULL) {
-			insere_linha(svg, l);
-		}
+	for (int i = 0; i < n; i++) {
+		ponto *v = get_vertice(p, i);
+		fprintf(svg, "%.2f,%.2f ", get_x_ponto(v), get_y_ponto(v));
+		free_ponto(v);
 	}
+
+	fprintf(svg, "\" fill=\"%s\" fill-opacity=\"0.3\" stroke=\"%s\" stroke-width=\"2\" />\n",
+			cor, cor);
 }
 
 void insere_anteparo(FILE *svg, anteparo *a) {
