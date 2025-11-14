@@ -1,5 +1,5 @@
 #include <float.h>
-#include "varredura.h"
+#include "visibilidade.h"
 #include "sort.h"
 #include <stdlib.h>
 #include <string.h>
@@ -212,3 +212,94 @@ void get_angulos_criticos(ponto *bomba, lista *anteparos, double **angulos, int 
     }
 }
 
+ponto *raio_ate_anteparo_avl(arvore *seg_ativos, ponto *bomba, double angulo, double raio_max) {
+    if (get_tam_AVL(seg_ativos) == 0) {
+        double x = get_x_ponto(bomba) + raio_max * cos(angulo);
+        double y = get_y_ponto(bomba) + raio_max * sin(angulo);
+        return init_ponto(x, y);
+    }
+
+
+    ponto *p_intersecao = NULL;
+    double dist = raio_max;
+
+    buscar_intersecao_avl_rec(get_root(seg_ativos), bomba, angulo, &dist, &p_intersecao);
+
+
+    if (p_intersecao != NULL) {
+        return p_intersecao;
+    }
+
+
+    double x = get_x_ponto(bomba) + dist * cos(angulo);
+    double y = get_y_ponto(bomba) + dist * sin(angulo);
+
+    return init_ponto(x, y);
+}
+
+static int cmp_double(const void *a, const void *b) {
+    double ia = *(const double *)a;
+    double ib = *(const double *)b;
+    return (ia > ib) - (ia < ib);
+}
+
+
+poligono *calc_regiao_visibilidade(ponto *bomba, lista *anteparos, char tipo_ord, double raio_max, int threshold_i) {
+    poligono *visibilidade = init_poligono();
+
+    lista *infos = preparar_segmentos(bomba, anteparos);
+
+    double *angulos = NULL;
+    int num_angulos = 0;
+
+    get_angulos_criticos(bomba, anteparos, &angulos, &num_angulos);
+
+    if (num_angulos == 0) {
+        // Caso sem anteparos, cria um "círculo" (polígono)
+        // Nesse caso, todas as formas serão atingidas e transformadas
+        for (int i = 0; i < 16; i++) {
+            double ang = (2.0 * M_PI * i) / 16.0;
+            double x = get_x_ponto(bomba) + raio_max * cos(ang);
+            double y = get_y_ponto(bomba) + raio_max * sin(ang);
+            insert_vertice(visibilidade, x, y);
+        }
+        free_lista(infos, free);
+        return visibilidade;
+    }
+
+
+    if (tipo_ord == 'q') {
+        qsort(angulos, num_angulos, sizeof(double), cmp_double);
+    }
+
+    else if (tipo_ord == 'm') {
+        int threshold = (threshold_i > 0) ? threshold_i : 10;
+        merge_sort_generico(angulos, num_angulos, sizeof(double), cmp_double, threshold);
+
+    }
+
+    else {
+        printf("DEBUG: Tipo de ordenação inválido! Usando qsort como default!\n");
+        qsort(angulos, num_angulos, sizeof(double), cmp_double);
+    }
+
+    arvore *seg_ativos = init_arvore(comparar_segmentos_ativos, free_segmento_ativo, NULL);
+
+    for (int i = 0; i < num_angulos; i++) {
+        double angulo_atual = angulos[i];
+
+        update_AVL_angulo(seg_ativos, angulo_atual, infos);
+        ponto *p_intersecao = raio_ate_anteparo_avl(seg_ativos, bomba, angulo_atual, raio_max);
+
+        if (p_intersecao) {
+            insert_ponto_poligono(visibilidade, p_intersecao);
+            free_ponto(p_intersecao);
+        }
+    }
+
+    free(angulos);
+    free_arvore(seg_ativos);
+    free_lista(infos, free);
+
+    return visibilidade;
+}
