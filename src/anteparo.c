@@ -10,7 +10,7 @@
 #include "formas.h"
 #include "linha.h"
 #include "poligono.h"
-#include "varredura.h"
+#include "visibilidade.h"
 
 #define EPSILON 1e-10
 
@@ -65,7 +65,7 @@ double get_x_p1(anteparo *a) {
 }
 
 double get_y_p1(anteparo *a) {
-    return get_x_ponto(a -> p1);
+    return get_y_ponto(a -> p1);
 }
 
 ponto *get_p1_anteparo(anteparo *a) {

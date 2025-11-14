@@ -55,10 +55,10 @@ void insere_texto(FILE *svg, texto *t);
 /// @param l: Ponteiro para a struct 'linha' com os dados a serem desenhados.
 void insere_linha(FILE *svg, linha *l);
 
-/// @brief
-/// @param svg
-/// @param p
-/// @param cor
+/// @brief Insere o polígono de visibilidade no arquivo .svg
+/// @param svg Arquivo .svg
+/// @param p Ponteiro para o polígono
+/// @param cor Cor do polígono (definida como VERMELHO)
 void insere_poligono_visibilidade(FILE *svg, poligono *p, const char *cor);
 
 /// @brief Insere um anteparo em um arquivo do tipo .svg
