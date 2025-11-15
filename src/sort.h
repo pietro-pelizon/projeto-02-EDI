@@ -2,6 +2,13 @@
 #define PROJETO_02_EDI_SORT_H
 #include <stddef.h>
 
+/// @brief Função que compara doubles para os algoritmos de ordenação
+/// @param a Ponteiro para o primeiro dado (double)
+/// @param b Ponteiro para o segundo dado (double)
+/// @return Retorna um número negativo se a for menor que b,
+/// um número positivo se a for maior que b, e 0 se os dois forem iguais
+int cmp_double(const void *a, const void *b);
+
 /// @brief Insertion Sort genérico para um array de elementos genéricos
 /// @param base Ponto de partida do Insertion Sort (segundo elemento do array)
 /// @param num_elementos Número de elementos contidos no array

@@ -5,6 +5,13 @@
 #include <stdlib.h>
 #include <string.h>
 
+
+int cmp_double(const void *a, const void *b) {
+    double ia = *(const double *)a;
+    double ib = *(const double *)b;
+    return (ia > ib) - (ia < ib);
+}
+
 void insertion_sort_generico(void *base, size_t num_elementos, size_t tamanho_elemento, int (*cmp_data)(const void *a, const void *b)) {
     if (num_elementos <= 1) {
         return;
