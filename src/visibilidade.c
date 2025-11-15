@@ -1,4 +1,5 @@
 #include <float.h>
+#include <math.h>
 #include "visibilidade.h"
 #include "sort.h"
 #include <stdlib.h>
@@ -9,6 +10,7 @@
 #include "geometria.h"
 #include "poligono.h"
 
+#define PI 3.14159265358
 #define EPSILON 1e-10
 
 typedef struct stInfo_segmento {
@@ -74,7 +76,7 @@ lista *preparar_segmentos(ponto *bomba, lista *anteparos) {
         if (ang0 > ang1) {
             double temp = ang0; ang0 = ang1; ang1 = temp;
         }
-        if (ang1 - ang0 > M_PI) {
+        if (ang1 - ang0 > PI) {
             double temp = ang0; ang0 = ang1; ang1 = temp;
         }
 
@@ -119,23 +121,25 @@ void update_AVL_angulo(arvore *seg_ativo, double angulo, lista *info_seg) {
 }
 
 static void buscar_intersecao_avl_rec(node_AVL *node, ponto *bomba, double angulo, double *dist_min, ponto **ponto_intersecao) {
-    if (node == NULL || *ponto_intersecao != NULL) {
+    if (node == NULL) {
         return;
     }
 
     buscar_intersecao_avl_rec(get_esquerda_node(node), bomba, angulo, dist_min, ponto_intersecao);
-
-    if (*ponto_intersecao != NULL) return;
 
     segmento_ativo *sa = (segmento_ativo*)get_node_dataAVL(node);
     double dist = calc_dist_anteparo_bomba(sa->seg, bomba, angulo);
 
     if (dist < *dist_min) {
         *dist_min = dist;
+
+        if (*ponto_intersecao != NULL) {
+            free_ponto(*ponto_intersecao);
+        }
+
         double x = get_x_ponto(bomba) + dist * cos(angulo);
         double y = get_y_ponto(bomba) + dist * sin(angulo);
         *ponto_intersecao = init_ponto(x, y);
-        return;
     }
 
     buscar_intersecao_avl_rec(get_direita_node(node), bomba, angulo, dist_min, ponto_intersecao);
@@ -237,12 +241,6 @@ ponto *raio_ate_anteparo_avl(arvore *seg_ativos, ponto *bomba, double angulo, do
     return init_ponto(x, y);
 }
 
-static int cmp_double(const void *a, const void *b) {
-    double ia = *(const double *)a;
-    double ib = *(const double *)b;
-    return (ia > ib) - (ia < ib);
-}
-
 
 poligono *calc_regiao_visibilidade(ponto *bomba, lista *anteparos, char tipo_ord, double raio_max, int threshold_i) {
     poligono *visibilidade = init_poligono();
@@ -258,12 +256,13 @@ poligono *calc_regiao_visibilidade(ponto *bomba, lista *anteparos, char tipo_ord
         // Caso sem anteparos, cria um "círculo" (polígono)
         // Nesse caso, todas as formas serão atingidas e transformadas
         for (int i = 0; i < 16; i++) {
-            double ang = (2.0 * M_PI * i) / 16.0;
+            double ang = (2.0 * PI * i) / 16.0;
             double x = get_x_ponto(bomba) + raio_max * cos(ang);
             double y = get_y_ponto(bomba) + raio_max * sin(ang);
             insert_vertice(visibilidade, x, y);
         }
         free_lista(infos, free);
+        free(angulos);
         return visibilidade;
     }
 
@@ -285,15 +284,49 @@ poligono *calc_regiao_visibilidade(ponto *bomba, lista *anteparos, char tipo_ord
 
     arvore *seg_ativos = init_arvore(comparar_segmentos_ativos, free_segmento_ativo, NULL);
 
+    node *atual_info = get_head_node(infos);
+    while(atual_info != NULL) {
+        info_segmento *info = get_node_data(atual_info);
+
+        if (info -> angulo_inicial > info -> angulo_final) {
+            segmento_ativo *sa = malloc(sizeof(segmento_ativo));
+            sa -> seg = info -> seg;
+            sa -> dist_bomba = info -> distancia;
+            sa -> id = info -> id;
+            arvore_insere(seg_ativos, sa);
+        }
+        atual_info = go_next_node(atual_info);
+    }
+
     for (int i = 0; i < num_angulos; i++) {
+
+        if (i > 0 && fabs(angulos[i] - angulos[i-1]) < EPSILON) {
+            continue;
+        }
+
         double angulo_atual = angulos[i];
 
         update_AVL_angulo(seg_ativos, angulo_atual, infos);
-        ponto *p_intersecao = raio_ate_anteparo_avl(seg_ativos, bomba, angulo_atual, raio_max);
+        ponto *p_intersecao1 = raio_ate_anteparo_avl(seg_ativos, bomba, angulo_atual, raio_max);
+        if (p_intersecao1) {
+            insert_ponto_poligono(visibilidade, p_intersecao1);
+            free_ponto(p_intersecao1);
+        }
 
-        if (p_intersecao) {
-            insert_ponto_poligono(visibilidade, p_intersecao);
-            free_ponto(p_intersecao);
+        double angulo_meio;
+        if (i == num_angulos - 1) {
+            angulo_meio = (angulo_atual + (angulos[0] + 2.0 * PI)) / 2.0;
+        } else {
+            angulo_meio = (angulo_atual + angulos[i+1]) / 2.0;
+        }
+
+        // Evita disparar se os ângulos forem idênticos
+        if (fabs(angulo_meio - angulo_atual) > EPSILON) {
+            ponto *p_intersecao2 = raio_ate_anteparo_avl(seg_ativos, bomba, angulo_meio, raio_max);
+            if (p_intersecao2) {
+                insert_ponto_poligono(visibilidade, p_intersecao2);
+                free_ponto(p_intersecao2);
+            }
         }
     }
 

@@ -1,5 +1,5 @@
-#ifndef PROJETO_02_EDI_VARREDURA_H
-#define PROJETO_02_EDI_VARREDURA_H
+#ifndef VISIBILIDADE_H
+#define VISIBILIDADE_H
 
 #include "anteparo.h"
 #include "lista.h"
@@ -56,4 +56,4 @@ ponto *raio_ate_anteparo_avl(arvore *seg_ativos, ponto *bomba, double angulo, do
 /// @return Polígono da região visível (liberar com free_poligono após uso)
 poligono *calc_regiao_visibilidade(ponto *bomba, lista *anteparos, char tipo_ord, double raio_max, int threshold_i);
 
-#endif //PROJETO_02_EDI_VARREDURA_H
+#endif
