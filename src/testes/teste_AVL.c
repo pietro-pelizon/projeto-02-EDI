@@ -1,4 +1,3 @@
-#define _POSIX_C_SOURCE 200809L
 #include "arvore.h"
 #include <stdio.h>
 #include <stdlib.h>
@@ -222,7 +221,7 @@ void test_remocao_um_filho() {
     data = remove_node(t, &key);
     if (data) free_int(data);
 
-    free_arvore(t);// Alterado de free(t)
+    free_arvore(t);
 }
 
 void test_remocao_dois_filhos() {

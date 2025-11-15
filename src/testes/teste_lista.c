@@ -49,7 +49,7 @@ void test_lista_vazia() {
     assert(is_empty_lista(l) == 1);
 
     free_lista(l, NULL);
-    printf("✓ Lista vazia OK\n");
+    printf("Lista vazia OK\n");
 }
 
 void test_insercao_remocao_basica() {
@@ -85,7 +85,7 @@ void test_insercao_remocao_basica() {
     free(removido_tail);
 
     free_lista(l, NULL);
-    printf("✓ Inserção e remoção básica OK\n");
+    printf("Inserção e remoção básica OK\n");
 }
 
 void test_insercao_por_indice() {
@@ -111,7 +111,7 @@ void test_insercao_por_indice() {
     assert(get_data_index(l, 2) == td[1]);
 
     free_lista(l, free_teste_data);
-    printf("✓ Inserção por índice OK\n");
+    printf("Inserção por índice OK\n");
 }
 
 void test_busca_operacoes() {
@@ -140,7 +140,7 @@ void test_busca_operacoes() {
     assert(contains(l, &nao_existe, compare_teste_data) == 0);
 
     free_lista(l, free_teste_data);
-    printf("✓ Busca e operações OK\n");
+    printf("Busca e operações OK\n");
 }
 
 void test_find_max_min_simples() {
@@ -168,15 +168,15 @@ void test_find_max_min_simples() {
     TesteData *max = find_max(l, compare_teste_data);
     assert(max != NULL);
     assert(max->id == 10);
-    printf("✓ Find_max OK: %d\n", max->id);
+    printf("Find_max OK: %d\n", max->id);
 
     TesteData *min = find_min(l, compare_teste_data);
     assert(min != NULL);
     assert(min->id == 3);
-    printf("✓ Find_min OK: %d\n", min->id);
+    printf("Find_min OK: %d\n", min->id);
 
     free_lista(l, free_teste_data);
-    printf("✓ Find max/min simples OK\n");
+    printf("Find max/min simples OK\n");
 }
 
 void test_operacoes_avancadas() {
@@ -192,7 +192,7 @@ void test_operacoes_avancadas() {
     map_lista(l, transforma_incrementa_id);
     assert(((TesteData*)get_data_index(l, 0))->id == 110);
 
-    printf("✓ Map OK\n");
+    printf("Map OK\n");
 
     free_lista(l, free_teste_data);
 }
@@ -236,7 +236,7 @@ void test_limpeza_inversao() {
 
     free_lista(l, free_teste_data);
 
-    printf("✓ Limpeza e inversão OK\n");
+    printf("Limpeza e inversão OK\n");
 }
 
 void test_find_max_min_completo() {
@@ -262,10 +262,10 @@ void test_find_max_min_completo() {
     TesteData *min = find_min(l, compare_teste_data);
     assert(min != NULL);
     assert(min->id == 3);
-    printf("✓ Find_min OK: %d\n", min->id);
+    printf("Find_min OK: %d\n", min->id);
 
     free_lista(l, free_teste_data);
-    printf("✓ Find max/min completo OK\n");
+    printf("Find max/min completo OK\n");
 }
 
 void test_remove_all_if_completo() {
@@ -291,7 +291,7 @@ void test_remove_all_if_completo() {
     assert(second->id == 3);
 
     free_lista(l, free_teste_data);
-    printf("✓ Remove_all_if OK\n");
+    printf("Remove_all_if OK\n");
 }
 
 void test_clear_lista() {
@@ -321,7 +321,7 @@ void test_clear_lista() {
     assert(((TesteData*)get_head_data(l))->id == 100);
 
     free_lista(l, free_teste_data);
-    printf("✓ Clear lista OK\n");
+    printf("Clear lista OK\n");
 }
 
 void test_remove_all_if() {
@@ -333,7 +333,7 @@ void test_remove_all_if() {
     for (int i = 0; i < 6; i++) {
         td[i] = malloc(sizeof(TesteData));
         td[i]->id = i; // 0, 1, 2, 3, 4, 5
-        snprintf(td[i]->nome, 20, "Item%d", i);
+        snprintf(td[i] -> nome, 20, "Item%d", i);
         insert_tail(l, td[i]);
     }
 
@@ -372,7 +372,7 @@ void test_remove_all_if() {
     printf("\n");
 
     free_lista(l, free_teste_data);
-    printf("✓ Remove_all_if OK\n");
+    printf("Remove_all_if OK\n");
 }
 
 int main() {
@@ -390,9 +390,7 @@ int main() {
     test_limpeza_inversao();
     test_remove_all_if();
 
-    printf("\n========================================\n");
-    printf("✓ TODOS OS TESTES PASSARAM!\n");
-    printf("========================================\n");
+    printf("TODOS OS TESTES PASSARAM!\n");
 
     return 0;
 }
