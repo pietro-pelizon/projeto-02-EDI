@@ -1,5 +1,5 @@
-#ifndef PROCESSAGEO_H
-#define PROCESSAGEO_H
+#ifndef PARSER_GEO_H
+#define PARSER_GEO_H
 
 #include "lista.h"
 
@@ -7,7 +7,7 @@
 /// e processa os dados das formas que estão contidos
 /// nele. A cada criação de forma, adiciona a forma ao chão.
 /// @param nome_path_geo: Nome do arquivo .geo.
-/// @return: O chão com as formas já criadas e adicionadas a ele.
+/// @return: A lista com as formas já criadas e adicionadas a ela.
 lista *parser_geo(const char *nome_path_geo);
 
-#endif //PROCESSAGEO_H
+#endif

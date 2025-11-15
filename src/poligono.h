@@ -50,7 +50,7 @@ lista *get_lista_vertices(poligono *p);
 
 /// @brief (Re)calcula a Bounding Box do polígono
 /// @param p O polígono
-void calcular_bounding_Box(poligono* p);
+void calcular_bounding_box(poligono* p);
 
 /// @brief Obtém os valores da Bounding Box do polígono
 /// @param p O polígono

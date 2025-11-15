@@ -104,7 +104,7 @@ void insere_poligono_visibilidade(FILE *svg, poligono *p, const char *cor) {
 
 	for (int i = 0; i < n; i++) {
 		ponto *v = get_vertice(p, i);
-		fprintf(svg, "%.2f,%.2f ", get_x_ponto(v), get_y_ponto(v));
+		fprintf(svg, "%.4lf,%.4lf ", get_x_ponto(v), get_y_ponto(v));
 		free_ponto(v);
 	}
 
@@ -148,6 +148,7 @@ void fecha_svg(FILE *svg) {
 
 	fclose(svg);
 }
+
 
 void acao_desenhar(void* item, void* aux) {
 	FILE* arquivo_svg = (FILE*)aux;
