@@ -1,4 +1,7 @@
 #include "poligono.h"
+
+#include <float.h>
+
 #include "lista.h"
 
 #include <stdio.h>
@@ -94,21 +97,12 @@ lista* get_segmentos(poligono* p) {
 
 
 lista *get_lista_vertices(poligono *p) {
-    if (p == NULL || p -> vertices == NULL) return NULL;
+    if (p -> vertices == NULL) return NULL;
 
-    lista *copy = init_lista();
-    int n = get_num_vertices(p);
-    for (int i = 0; i < n; i++) {
-        ponto *pN = get_vertice(p, i);
-        if (pN != NULL) {
-            insert_tail(copy, pN);
-        }
-    }
-
-    return copy;
+   return p -> vertices;
 }
 
-void calcular_bounding_Box(poligono* p) {
+void calcular_bounding_box(poligono* p) {
     if (p == NULL || p -> num_vertices == 0) return;
 
     node* no = get_head_node(p->vertices);
@@ -134,11 +128,53 @@ void calcular_bounding_Box(poligono* p) {
     p -> bbox_valida = true;
 }
 
+void get_bounding_box(poligono *p, double *xMin, double *xMax, double *yMin, double *yMax) {
+    if (p == NULL || xMin == NULL || xMax == NULL || yMin == NULL || yMax == NULL) {
+        return;
+    }
+
+    lista *vertices = get_lista_vertices(p);
+
+    if (vertices == NULL || get_tam_lista(vertices) == 0) {
+        *xMin = *xMax = *yMin = *yMax = 0.0; // Define um valor padrão
+        return;
+    }
+
+    *xMin = DBL_MAX;
+    *yMin = DBL_MAX;
+    *xMax = -DBL_MAX;
+    *yMax = -DBL_MAX;
+
+    // 3. Itera por todos os vértices
+    node *no_atual = get_head_node(vertices);
+    while (no_atual != NULL) {
+        ponto *v = (ponto *) get_node_data(no_atual);
+        double x = get_x_ponto(v);
+        double y = get_y_ponto(v);
+
+        if (x < *xMin) {
+            *xMin = x;
+        }
+        if (x > *xMax) {
+            *xMax = x;
+
+            if (y < *yMin) {
+                *yMin = y;
+            }
+            if (y > *yMax) {
+                *yMax = y;
+            }
+
+            no_atual = go_next_node(no_atual);
+        }
+    }
+}
+
 bool is_inside(poligono* p, double px, double py) {
     if (p == NULL || p -> num_vertices < 3) return false;
 
     if (!p -> bbox_valida) {
-        calcular_bounding_Box(p);
+        calcular_bounding_box(p);
     }
 
     if (px < p -> xMin || px > p -> xMax || py < p -> yMin || py > p -> yMax) {
