@@ -484,7 +484,7 @@ lista *forma_anteparo(forma *f, char orientacao) {
 	switch (tipo) {
 		case CIRCULO: {
 			anteparo *anteparo_circulo = circulo_anteparo(dados, orientacao);
-			forma *criada = cria_forma(novo_id,  ANTEPARO, anteparo_circulo);
+			forma *criada = cria_forma(++novo_id,  ANTEPARO, anteparo_circulo);
 			insert_tail(anteparos, criada);
 			break;
 		}
@@ -493,7 +493,7 @@ lista *forma_anteparo(forma *f, char orientacao) {
 			lista *anteparos_ret = retangulo_anteparo(dados);
 			while (get_tam_lista(anteparos_ret) != 0) {
 				anteparo *retirado = remove_head(anteparos_ret);
-				forma *criada = cria_forma(novo_id, ANTEPARO, retirado);
+				forma *criada = cria_forma(++novo_id, ANTEPARO, retirado);
 				insert_tail(anteparos, criada);
 			}
 			free_lista(anteparos_ret, NULL);
@@ -502,14 +502,14 @@ lista *forma_anteparo(forma *f, char orientacao) {
 
 		case LINHA: {
 			anteparo *copia = linha_anteparo(dados);
-			forma *criada = cria_forma(novo_id, ANTEPARO, copia);
+			forma *criada = cria_forma(++novo_id, ANTEPARO, copia);
 			insert_tail(anteparos, criada);
 			break;
 		}
 
 		case TEXTO: {
 			anteparo *texto = converter_texto_para_anteparo(dados);
-			forma *criada = cria_forma(novo_id, ANTEPARO, texto);
+			forma *criada = cria_forma(++novo_id, ANTEPARO, texto);
 			insert_tail(anteparos, criada);
 			break;
 		}
@@ -520,6 +520,3 @@ lista *forma_anteparo(forma *f, char orientacao) {
 
 	return anteparos;
 }
-
-
-
