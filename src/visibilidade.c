@@ -13,13 +13,18 @@
 #define PI 3.14159265358
 #define EPSILON 1e-10
 
-typedef struct stInfo_segmento {
+typedef enum enum_tipo_evento {
+    INICIO,
+    FIM
+}tipo_evento;
+
+typedef struct stEvento {
     int id;
-    anteparo *seg;
-    double angulo_inicial;
-    double angulo_final;
-    double distancia;
-} info_segmento;
+    double angulo;
+    double distancia_estatica;
+    tipo_evento tipo;
+    anteparo *segmento;
+}evento;
 
 typedef struct stSegmento_ativo {
     anteparo *seg;
@@ -27,10 +32,55 @@ typedef struct stSegmento_ativo {
     double dist_bomba;
 } segmento_ativo;
 
+static int cmp_eventos(const void *a, const void *b) {
+    evento *e1 = (evento*)a;
+    evento *e2 = (evento*)b;
+
+    if (e1 -> angulo < e2 -> angulo - EPSILON) return -1;
+    if (e1 -> angulo > e2 -> angulo + EPSILON) return 1;
+
+    if (e1 -> tipo < e2 -> tipo) return -1;
+    if (e1 -> tipo > e2 -> tipo) return 1;
+
+    if (e1 -> distancia_estatica < e2 -> distancia_estatica - EPSILON) return -1;
+    if (e1->distancia_estatica > e2 -> distancia_estatica + EPSILON) return 1;
+
+    return 0;
+}
+
+static double normalizar_angulo(double ang) {
+    while (ang < 0) ang += 2.0 * PI;
+    while (ang >= 2.0 * PI) ang -= 2.0 * PI;
+    return ang;
+}
+
 static void free_segmento_ativo(void *data) {
     if (data) {
         free(data);
     }
+}
+
+static bool validar_ponto(ponto *p, ponto *bomba, double raio_max) {
+    if (p == NULL || bomba == NULL) return false;
+
+    double dx = get_x_ponto(p) - get_x_ponto(bomba);
+    double dy = get_y_ponto(p) - get_y_ponto(bomba);
+
+    double dist_sq = dx * dx + dy * dy;
+    double raio_max_sq = raio_max * raio_max;
+
+    if (dist_sq < 0.0001) return false;
+
+    if (dist_sq >= raio_max_sq * 0.999) {
+        printf("DEBUG: Ponto descartado por estar no limite do raio (infinito)\n");
+        return false;
+    }
+
+    double x = get_x_ponto(p);
+    double y = get_y_ponto(p);
+    if (!isfinite(x) || !isfinite(y)) return false;
+
+    return true;
 }
 
 static int comparar_segmentos_ativos(const void *a, const void *b) {
@@ -47,173 +97,73 @@ static int comparar_segmentos_ativos(const void *a, const void *b) {
     return 0;
 }
 
+static void buscar_intersecao_avl_rec(node_AVL *node, ponto *bomba, double angulo, double *dist_min, ponto **ponto_intersecao, double raio_max) {
+    if (node == NULL) return;
 
-lista *preparar_segmentos(ponto *bomba, lista *anteparos) {
-    if (bomba == NULL || anteparos == NULL) return NULL;
-
-    lista *info = init_lista();
-    node *atual = get_head_node(anteparos);
-
-    while (atual != NULL) {
-        forma *f = get_node_data(atual);
-        anteparo *a = get_dados_forma(f);
-
-        ponto *p0 = get_p0_anteparo(a);
-        ponto *p1 = get_p1_anteparo(a);
-
-        info_segmento *info_seg = malloc(sizeof(info_segmento));
-        if (info_seg == NULL) {
-            printf("DEBUG: Erro ao alocar memória para as informações dos segmentos!\n");
-            return NULL;
-        }
-
-        info_seg -> seg = a;
-        info_seg -> id = get_id_forma(f);
-
-        double ang0 = calcula_angulo(bomba, p0);
-        double ang1 = calcula_angulo(bomba, p1);
-
-        if (ang0 > ang1) {
-            double temp = ang0; ang0 = ang1; ang1 = temp;
-        }
-        if (ang1 - ang0 > PI) {
-            double temp = ang0; ang0 = ang1; ang1 = temp;
-        }
-
-            info_seg -> angulo_inicial = ang0;
-            info_seg -> angulo_final = ang1;
-
-        info_seg -> distancia = calcular_distancia_ponto_segmento(bomba, a);
-
-        insert_tail(info, info_seg);
-        atual = go_next_node(atual);
-    }
-
-    return info;
-}
-
-void update_AVL_angulo(arvore *seg_ativo, double angulo, lista *info_seg) {
-    node *atual = get_head_node(info_seg);
-
-    while (atual != NULL) {
-        info_segmento *info = get_node_data(atual);
-
-        if (fabs(angulo - info -> angulo_inicial) < EPSILON) {
-            segmento_ativo *sa = malloc(sizeof(segmento_ativo));
-            sa -> seg = info -> seg;
-            sa -> dist_bomba = info -> distancia;
-            sa -> id = info -> id;
-
-            arvore_insere(seg_ativo, sa);
-        }
-
-        if (fabs(angulo - info -> angulo_final) < EPSILON) {
-            segmento_ativo chave;
-            chave.dist_bomba = info -> distancia;
-            chave.id = info -> id;
-
-            void *removido = remove_node(seg_ativo, &chave);
-            if (removido) free(removido);
-        }
-
-        atual = go_next_node(atual);
-    }
-}
-
-static void buscar_intersecao_avl_rec(node_AVL *node, ponto *bomba, double angulo, double *dist_min, ponto **ponto_intersecao) {
-    if (node == NULL) {
-        return;
-    }
-
-    buscar_intersecao_avl_rec(get_esquerda_node(node), bomba, angulo, dist_min, ponto_intersecao);
+    buscar_intersecao_avl_rec(get_esquerda_node(node), bomba, angulo, dist_min, ponto_intersecao, raio_max);
 
     segmento_ativo *sa = (segmento_ativo*)get_node_dataAVL(node);
-    double dist = calc_dist_anteparo_bomba(sa->seg, bomba, angulo);
+
+    double dist = calc_dist_anteparo_bomba(sa->seg, bomba, angulo, raio_max);
 
     if (dist < *dist_min) {
         *dist_min = dist;
 
-        if (*ponto_intersecao != NULL) {
-            free_ponto(*ponto_intersecao);
-        }
+        if (*ponto_intersecao != NULL) free_ponto(*ponto_intersecao);
 
         double x = get_x_ponto(bomba) + dist * cos(angulo);
         double y = get_y_ponto(bomba) + dist * sin(angulo);
         *ponto_intersecao = init_ponto(x, y);
     }
 
-    buscar_intersecao_avl_rec(get_direita_node(node), bomba, angulo, dist_min, ponto_intersecao);
+    buscar_intersecao_avl_rec(get_direita_node(node), bomba, angulo, dist_min, ponto_intersecao, raio_max);
 }
 
+static void update_evento_arvore(arvore *seg_ativo, evento *e) {
+    if (e -> tipo == INICIO) {
+        segmento_ativo *novo_ativo = malloc (sizeof(segmento_ativo));
 
+        if (novo_ativo != NULL) {
+            novo_ativo -> id = e -> id;
+            novo_ativo -> seg = e -> segmento;
+            novo_ativo -> dist_bomba = e -> distancia_estatica;
 
-double calc_dist_anteparo_bomba(anteparo *a, ponto *p_bomba, double angulo) {
-    double p1_x = get_x_ponto(p_bomba);
-    double p1_y = get_y_ponto(p_bomba);
-
-    double p2_x = p1_x + cos(angulo);
-    double p2_y = p1_y + sin(angulo);
-
-    double p3_x = get_x_ponto(get_p0_anteparo(a));
-    double p3_y = get_y_ponto(get_p0_anteparo(a));
-    double p4_x = get_x_ponto(get_p1_anteparo(a));
-    double p4_y = get_y_ponto(get_p1_anteparo(a));
-
-    double D = (p1_x - p2_x) * (p3_y - p4_y) - (p1_y - p2_y) * (p3_x - p4_x);
-
-    if (fabs(D) < EPSILON) {
-        return DBL_MAX;
+            arvore_insere(seg_ativo, novo_ativo);
+            printf("DEBUG: Inserido ID %d\n", e -> id);
+        }
     }
 
-    double t_num = (p1_x - p3_x) * (p3_y - p4_y) - (p1_y - p3_y) * (p3_x - p4_x);
-    double u_num = -((p1_x - p2_x) * (p1_y - p3_y) - (p1_y - p2_y) * (p1_x - p3_x));
+    else {
+        segmento_ativo chave_busca;
+        chave_busca.id = e -> id;
+        chave_busca.dist_bomba = e -> distancia_estatica;
 
-    double t = t_num / D;
-    double u = u_num / D;
+        void *seg_removido = remove_node(seg_ativo, &chave_busca);
 
-    if (t < -EPSILON) {
-        return DBL_MAX;
+        if (seg_removido) {
+            free(seg_removido);
+        }
     }
-
-    if (u < -EPSILON || u > (1.0 + EPSILON)) {
-        return DBL_MAX;
-    }
-
-    double ix = p1_x + t * (p2_x - p1_x);
-    double iy = p1_y + t * (p2_y - p1_y);
-
-    double dist = sqrt(distancia_quadrada(ix, iy, p1_x, p1_y));
-
-    return dist;
 }
 
-void get_angulos_criticos(ponto *bomba, lista *anteparos, double **angulos, int *num_angulos) {
-    *num_angulos = 2 * get_tam_lista(anteparos);
+static void capturar_ponto_visibilidade(poligono *visibilidade, arvore *seg_ativos, ponto *bomba, double angulo, double raio_max) {
+    ponto *p = raio_ate_anteparo_avl(seg_ativos, bomba, angulo, raio_max);
 
-    *angulos = malloc (*num_angulos * sizeof(double));
-    if (*angulos == NULL) {
-        printf("DEBUG: Erro ao alocar memória para o array de ângulos!\n");
-        *num_angulos = 0;
-        return;
+    if (p != NULL) {
+        if (validar_ponto(p, bomba, raio_max)) {
+            insert_ponto_poligono(visibilidade, p);
+        }
+        free_ponto(p);
     }
+}
 
-    int index = 0;
+static bool deve_processar_raio(int index_atual, int num_total_eventos, evento *e) {
+    if (index_atual == num_total_eventos - 1) return true;
 
-    node *atual  = get_head_node(anteparos);
+    double angulo_atual = e[index_atual].angulo;
+    double angulo_proximo = e[index_atual + 1].angulo;
 
-    while (atual != NULL) {
-        forma *f = get_node_data(atual);
-
-        anteparo *a = (anteparo*)get_dados_forma(f);
-
-        ponto *p0 = get_p0_anteparo(a);
-        ponto *p1 = get_p1_anteparo(a);
-
-        (*angulos)[index++] = calcula_angulo(bomba, p0);
-        (*angulos)[index++] = calcula_angulo(bomba, p1);
-
-        atual = go_next_node(atual);
-    }
+    return angulo_atual - angulo_proximo < EPSILON;
 }
 
 ponto *raio_ate_anteparo_avl(arvore *seg_ativos, ponto *bomba, double angulo, double raio_max) {
@@ -223,116 +173,197 @@ ponto *raio_ate_anteparo_avl(arvore *seg_ativos, ponto *bomba, double angulo, do
         return init_ponto(x, y);
     }
 
-
     ponto *p_intersecao = NULL;
-    double dist = raio_max;
+    double dist_min = raio_max;
 
-    buscar_intersecao_avl_rec(get_root(seg_ativos), bomba, angulo, &dist, &p_intersecao);
-
+    buscar_intersecao_avl_rec(get_root(seg_ativos), bomba, angulo, &dist_min, &p_intersecao, raio_max);
 
     if (p_intersecao != NULL) {
         return p_intersecao;
     }
 
-
-    double x = get_x_ponto(bomba) + dist * cos(angulo);
-    double y = get_y_ponto(bomba) + dist * sin(angulo);
-
+    double x = get_x_ponto(bomba) + raio_max * cos(angulo);
+    double y = get_y_ponto(bomba) + raio_max * sin(angulo);
     return init_ponto(x, y);
 }
 
+evento *preparar_segmentos(ponto *bomba, lista *anteparos, int *num_eventos) {
+    if (bomba == NULL || anteparos == NULL) return NULL;
+
+    int size_lista = get_tam_lista(anteparos);
+    int max_eventos = 4 * size_lista;
+
+
+    evento *vetor_eventos = malloc (max_eventos * sizeof(evento));
+    if (vetor_eventos == NULL) {
+        printf("DEBUG: Erro ao alocar vetor de eventos!\n");
+        return NULL;
+    }
+
+    node *atual = get_head_node(anteparos);
+    int k = 0;
+
+    while (atual != NULL) {
+        forma *f = get_node_data(atual);
+        anteparo *a = get_dados_forma(f);
+        ponto *p0 = get_p0_anteparo(a);
+        ponto *p1 = get_p1_anteparo(a);
+
+
+        vetor_eventos -> segmento = a;
+        vetor_eventos -> id = get_id_anteparo(a);
+
+        double angulo1 = normalizar_angulo(calcula_angulo(bomba, p0));
+        double angulo2 = normalizar_angulo(calcula_angulo(bomba, p1));
+
+        if (angulo1 > angulo2) {
+            double temp = angulo1;
+            angulo1 = angulo2;
+            angulo2 = temp;
+            }
+
+        double dist = calcular_distancia_ponto_segmento(bomba, a);
+
+        if (angulo2 - angulo1 > PI) {
+
+            vetor_eventos[k].angulo = angulo2;
+            vetor_eventos[k].tipo = INICIO;
+            vetor_eventos[k].segmento = a;
+            vetor_eventos[k].distancia_estatica = dist;
+            vetor_eventos[k].id = get_id_anteparo(a);
+            k++;
+
+            vetor_eventos[k].angulo = 2 * PI;
+            vetor_eventos[k].tipo = FIM;
+            vetor_eventos[k].segmento = a;
+            vetor_eventos[k].distancia_estatica = dist;
+            vetor_eventos[k].id = get_id_anteparo(a);
+            k++;
+
+            vetor_eventos[k].angulo = 0.0;
+            vetor_eventos[k].tipo = INICIO;
+            vetor_eventos[k].segmento = a;
+            vetor_eventos[k].distancia_estatica = dist;
+            vetor_eventos[k].id = get_id_anteparo(a);
+            k++;
+
+            vetor_eventos[k].angulo = angulo1;
+            vetor_eventos[k].tipo = FIM;
+            vetor_eventos[k].segmento = a;
+            vetor_eventos[k].distancia_estatica = dist;
+            vetor_eventos[k].id = get_id_anteparo(a);
+            k++;
+        }
+
+        else {
+            vetor_eventos[k].angulo = angulo1;
+            vetor_eventos[k].tipo = INICIO;
+            vetor_eventos[k].segmento = a;
+            vetor_eventos[k].distancia_estatica = dist;
+            vetor_eventos[k].id = get_id_anteparo(a);
+            k++;
+
+            vetor_eventos[k].angulo = angulo2;
+            vetor_eventos[k].tipo = FIM;
+            vetor_eventos[k].segmento = a;
+            vetor_eventos[k].distancia_estatica = dist;
+            vetor_eventos[k].id = get_id_anteparo(a);
+            k++;
+        }
+
+        atual = go_next_node(atual);
+    }
+
+    *num_eventos = k;
+
+    return vetor_eventos;
+}
+
+double calc_dist_anteparo_bomba(anteparo *a, ponto *p_bomba, double angulo, double raio_max) {
+    if (a == NULL || p_bomba == NULL) return DBL_MAX;
+
+    double bx = get_x_ponto(p_bomba);
+    double by = get_y_ponto(p_bomba);
+
+    double rx = bx + raio_max * cos(angulo);
+    double ry = by + raio_max * sin(angulo);
+
+    ponto *p0 = get_p0_anteparo(a);
+    ponto *p1 = get_p1_anteparo(a);
+    if (p0 == NULL || p1 == NULL) return DBL_MAX;
+
+    double s1x = get_x_ponto(p0);
+    double s1y = get_y_ponto(p0);
+    double s2x = get_x_ponto(p1);
+    double s2y = get_y_ponto(p1);
+
+    double denom = (s2y - s1y) * (rx - bx) - (s2x - s1x) * (ry - by);
+
+    if (fabs(denom) < EPSILON) return DBL_MAX;
+
+    double ua = ((s2x - s1x) * (by - s1y) - (s2y - s1y) * (bx - s1x)) / denom;
+    double ub = ((rx - bx) * (by - s1y) - (ry - by) * (bx - s1x)) / denom;
+
+    if (ua >= -EPSILON && ua <= 1.0 + EPSILON && ub >= -EPSILON && ub <= 1.0 + EPSILON) {
+        double dist = ua * raio_max;
+
+        if (dist >= -EPSILON && dist <= raio_max + EPSILON) {
+            return (dist < 0) ? 0 : dist;
+        }
+    }
+    return DBL_MAX;
+}
 
 poligono *calc_regiao_visibilidade(ponto *bomba, lista *anteparos, char tipo_ord, double raio_max, int threshold_i) {
     poligono *visibilidade = init_poligono();
 
-    lista *infos = preparar_segmentos(bomba, anteparos);
+    int num_eventos = 0;
+    evento *eventos = preparar_segmentos(bomba, anteparos, &num_eventos);
 
-    double *angulos = NULL;
-    int num_angulos = 0;
-
-    get_angulos_criticos(bomba, anteparos, &angulos, &num_angulos);
-
-    if (num_angulos == 0) {
-        // Caso sem anteparos, cria um "círculo" (polígono)
-        // Nesse caso, todas as formas serão atingidas e transformadas
-        for (int i = 0; i < 16; i++) {
-            double ang = (2.0 * PI * i) / 16.0;
+    if (num_eventos == 0) {
+        // Caso sem anteparos nenhum,
+        // cria um círculo grande o suficientemente
+        // para abranger todas as formas
+        for (int i = 0; i < 32; i++) {
+            double ang = (2.0 * PI * i) / 32.0;
             double x = get_x_ponto(bomba) + raio_max * cos(ang);
             double y = get_y_ponto(bomba) + raio_max * sin(ang);
             insert_vertice(visibilidade, x, y);
         }
-        free_lista(infos, free);
-        free(angulos);
+        free(eventos);
+
         return visibilidade;
     }
 
 
-    if (tipo_ord == 'q') {
-        qsort(angulos, num_angulos, sizeof(double), cmp_double);
-    }
-
-    else if (tipo_ord == 'm') {
+    if (tipo_ord == 'm') {
         int threshold = (threshold_i > 0) ? threshold_i : 10;
-        merge_sort_generico(angulos, num_angulos, sizeof(double), cmp_double, threshold);
-
+        merge_sort_generico(eventos, num_eventos, sizeof(evento), cmp_eventos, threshold);
     }
 
     else {
-        printf("DEBUG: Tipo de ordenação inválido! Usando qsort como default!\n");
-        qsort(angulos, num_angulos, sizeof(double), cmp_double);
+        qsort(eventos, num_eventos, sizeof(evento), cmp_eventos);
     }
 
     arvore *seg_ativos = init_arvore(comparar_segmentos_ativos, free_segmento_ativo, NULL);
 
-    node *atual_info = get_head_node(infos);
-    while(atual_info != NULL) {
-        info_segmento *info = get_node_data(atual_info);
+    for (int i = 0; i < num_eventos; i++) {
+        evento *atual = &eventos[i];
 
-        if (info -> angulo_inicial > info -> angulo_final) {
-            segmento_ativo *sa = malloc(sizeof(segmento_ativo));
-            sa -> seg = info -> seg;
-            sa -> dist_bomba = info -> distancia;
-            sa -> id = info -> id;
-            arvore_insere(seg_ativos, sa);
-        }
-        atual_info = go_next_node(atual_info);
-    }
+        update_evento_arvore(seg_ativos, atual);
 
-    for (int i = 0; i < num_angulos; i++) {
-
-        if (i > 0 && fabs(angulos[i] - angulos[i-1]) < EPSILON) {
-            continue;
-        }
-
-        double angulo_atual = angulos[i];
-
-        update_AVL_angulo(seg_ativos, angulo_atual, infos);
-        ponto *p_intersecao1 = raio_ate_anteparo_avl(seg_ativos, bomba, angulo_atual, raio_max);
-        if (p_intersecao1) {
-            insert_ponto_poligono(visibilidade, p_intersecao1);
-            free_ponto(p_intersecao1);
-        }
-
-        double angulo_meio;
-        if (i == num_angulos - 1) {
-            angulo_meio = (angulo_atual + (angulos[0] + 2.0 * PI)) / 2.0;
-        } else {
-            angulo_meio = (angulo_atual + angulos[i+1]) / 2.0;
-        }
-
-        // Evita disparar se os ângulos forem idênticos
-        if (fabs(angulo_meio - angulo_atual) > EPSILON) {
-            ponto *p_intersecao2 = raio_ate_anteparo_avl(seg_ativos, bomba, angulo_meio, raio_max);
-            if (p_intersecao2) {
-                insert_ponto_poligono(visibilidade, p_intersecao2);
-                free_ponto(p_intersecao2);
-            }
+        if (deve_processar_raio(i, num_eventos, eventos)) {
+            capturar_ponto_visibilidade(visibilidade, seg_ativos, bomba, atual -> angulo, raio_max);
         }
     }
 
-    free(angulos);
+    free(eventos);
     free_arvore(seg_ativos);
-    free_lista(infos, free);
+
+    if (get_num_vertices(visibilidade) > 0) {
+        calcular_bounding_box(visibilidade);
+    }
 
     return visibilidade;
+
 }
