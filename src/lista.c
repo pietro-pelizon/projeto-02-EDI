@@ -192,7 +192,7 @@ void *remove_tail(lista *l) {
 }
 
 void *remove_index(lista *l, int index) {
-    if (l == NULL || index < 0 || index > l -> tam ) {
+    if (l == NULL || index < 0 || index >= l -> tam ) {
         return NULL;
     }
 
@@ -201,7 +201,7 @@ void *remove_index(lista *l, int index) {
 
     }
 
-    if (index == l -> tam) {
+    if (index == l -> tam - 1) {
         return remove_tail(l);
     }
 
