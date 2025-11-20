@@ -147,10 +147,10 @@ lista *retangulo_anteparo(retangulo *r) {
     lista *anteparos = init_lista();
 
     anteparo *lados[4] = {
-		init_anteparo(novo_id, r -> x, r -> y, r -> x + r -> w, r -> y, getCorbRetangulo(r)),
-		init_anteparo(novo_id, r -> x, r -> y, r -> x, r -> y + r -> h, getCorbRetangulo(r)),
-		init_anteparo(novo_id, r -> x + r -> w, r -> y, r -> x + r -> w, r -> y + r -> h, getCorbRetangulo(r)),
-		init_anteparo(novo_id, r -> x, r -> y + r -> h, r -> x + r -> w, r -> y + r -> h, getCorbRetangulo(r))
+		init_anteparo(novo_id++, r -> x, r -> y, r -> x + r -> w, r -> y, getCorbRetangulo(r)),
+		init_anteparo(novo_id++, r -> x, r -> y, r -> x, r -> y + r -> h, getCorbRetangulo(r)),
+		init_anteparo(novo_id++, r -> x + r -> w, r -> y, r -> x + r -> w, r -> y + r -> h, getCorbRetangulo(r)),
+		init_anteparo(novo_id++, r -> x, r -> y + r -> h, r -> x + r -> w, r -> y + r -> h, getCorbRetangulo(r))
     };
 
     for (int i = 0; i < 4; i++) {
