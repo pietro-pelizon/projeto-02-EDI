@@ -321,7 +321,6 @@ anteparo *converter_texto_para_anteparo(texto *t) {
 	static int id_anteparo = 4000;
 	int novo_id = ++id_anteparo;
 
-	anteparo *l_out = init_anteparo(novo_id, 0, 0, 0, 0, getCorbTexto(t));
 
     ty1 = yt_ancora;
     ty2 = yt_ancora;
@@ -348,13 +347,9 @@ anteparo *converter_texto_para_anteparo(texto *t) {
             break;
     }
 
-	ponto *p0 = init_ponto(tx1, ty1);
-	ponto *p1 = init_ponto(tx2, ty2);
+	anteparo *a_out = init_anteparo(novo_id, tx1, ty1, tx2, ty2, getCorbTexto(t));
 
-	set_p0_anteparo(l_out, p0);
-	set_p1_anteparo(l_out, p1);
-
-	return l_out;
+	return a_out;
 }
 
 linha *converter_texto_para_linha(texto *t) {
@@ -368,7 +363,6 @@ linha *converter_texto_para_linha(texto *t) {
 	double tx1, ty1, tx2, ty2;
 	static int id_anteparo = 3000;
 	int novo_id = ++id_anteparo;
-	linha *l_out = criaLinha(novo_id, 0, 0, 0, 0, getCorpTexto(t), false);
 	ty1 = yt_ancora;
 	ty2 = yt_ancora;
 
@@ -391,10 +385,7 @@ linha *converter_texto_para_linha(texto *t) {
 			break;
 	}
 
-	setX1Linha(l_out, tx1);
-	setY1Linha(l_out, ty1);
-	setX2Linha(l_out, tx2);
-	setY2Linha(l_out, ty2);
+	linha *l_out = criaLinha(novo_id, tx1, ty1, tx2, ty2, getCorpTexto(t), false);
 
 	return l_out;
 
