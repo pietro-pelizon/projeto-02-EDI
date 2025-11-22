@@ -1,14 +1,14 @@
-#include <float.h>
+#include <string.h>
 #include <math.h>
+#include <stdlib.h>
 #include "visibilidade.h"
 #include "sort.h"
-#include <stdlib.h>
-#include <string.h>
 
 #include "arvore.h"
 #include "formas.h"
 #include "geometria.h"
 #include "poligono.h"
+#include "retangulo.h"
 
 #define PI 3.14159265358
 #define EPSILON 1e-10
@@ -163,7 +163,11 @@ static bool deve_processar_raio(int index_atual, int num_total_eventos, evento *
     double angulo_atual = e[index_atual].angulo;
     double angulo_proximo = e[index_atual + 1].angulo;
 
-    return angulo_atual - angulo_proximo < EPSILON;
+    if (angulo_proximo - angulo_atual > EPSILON) {
+        return true;
+    }
+
+    return false;
 }
 
 ponto *raio_ate_anteparo_avl(arvore *seg_ativos, ponto *bomba, double angulo, double raio_max) {
@@ -215,6 +219,10 @@ evento *preparar_segmentos(ponto *bomba, lista *anteparos, int *num_eventos) {
 
         double angulo1 = normalizar_angulo(calcula_angulo(bomba, p0));
         double angulo2 = normalizar_angulo(calcula_angulo(bomba, p1));
+
+        if (fabs(angulo1 - angulo2) < 0.0000001) {
+            angulo2 += 0.000001;
+        }
 
         if (angulo1 > angulo2) {
             double temp = angulo1;
@@ -279,50 +287,29 @@ evento *preparar_segmentos(ponto *bomba, lista *anteparos, int *num_eventos) {
     return vetor_eventos;
 }
 
-double calc_dist_anteparo_bomba(anteparo *a, ponto *p_bomba, double angulo, double raio_max) {
-    if (a == NULL || p_bomba == NULL) return DBL_MAX;
-
-    double bx = get_x_ponto(p_bomba);
-    double by = get_y_ponto(p_bomba);
-
-    double rx = bx + raio_max * cos(angulo);
-    double ry = by + raio_max * sin(angulo);
-
-    ponto *p0 = get_p0_anteparo(a);
-    ponto *p1 = get_p1_anteparo(a);
-    if (p0 == NULL || p1 == NULL) return DBL_MAX;
-
-    double s1x = get_x_ponto(p0);
-    double s1y = get_y_ponto(p0);
-    double s2x = get_x_ponto(p1);
-    double s2y = get_y_ponto(p1);
-
-    double denom = (s2y - s1y) * (rx - bx) - (s2x - s1x) * (ry - by);
-
-    if (fabs(denom) < EPSILON) return DBL_MAX;
-
-    double ua = ((s2x - s1x) * (by - s1y) - (s2y - s1y) * (bx - s1x)) / denom;
-    double ub = ((rx - bx) * (by - s1y) - (ry - by) * (bx - s1x)) / denom;
-
-    if (ua >= -EPSILON && ua <= 1.0 + EPSILON && ub >= -EPSILON && ub <= 1.0 + EPSILON) {
-        double dist = ua * raio_max;
-
-        if (dist >= -EPSILON && dist <= raio_max + EPSILON) {
-            return (dist < 0) ? 0 : dist;
-        }
-    }
-    return DBL_MAX;
-}
-
 poligono *calc_regiao_visibilidade(ponto *bomba, lista *anteparos, char tipo_ord, double raio_max, int threshold_i) {
     poligono *visibilidade = init_poligono();
+
+    retangulo *box_mundo = criaRetangulo(-1, -10, -10, 1010, 1010, "none", "none");
+    forma *f_box = cria_forma(-1, RETANGULO, box_mundo);
+    lista *paredes_mundo = forma_anteparo(f_box, 'h');
+
+    int qtd_paredes = 0;
+    node *aux = get_head_node(paredes_mundo);
+    while(aux != NULL) {
+        forma *seg_forma = get_node_data(aux);
+        insert_tail(anteparos, seg_forma);
+        qtd_paredes++;
+        aux = go_next_node(aux);
+    }
+
 
     int num_eventos = 0;
     evento *eventos = preparar_segmentos(bomba, anteparos, &num_eventos);
 
     if (num_eventos == 0) {
         // Caso sem anteparos nenhum,
-        // cria um círculo grande o suficientemente
+        // cria um círculo grande o suficiente
         // para abranger todas as formas
         for (int i = 0; i < 32; i++) {
             double ang = (2.0 * PI * i) / 32.0;
@@ -347,6 +334,7 @@ poligono *calc_regiao_visibilidade(ponto *bomba, lista *anteparos, char tipo_ord
 
     arvore *seg_ativos = init_arvore(comparar_segmentos_ativos, free_segmento_ativo, NULL);
 
+    // Algoritmo de sweep line
     for (int i = 0; i < num_eventos; i++) {
         evento *atual = &eventos[i];
 
@@ -356,6 +344,14 @@ poligono *calc_regiao_visibilidade(ponto *bomba, lista *anteparos, char tipo_ord
             capturar_ponto_visibilidade(visibilidade, seg_ativos, bomba, atual -> angulo, raio_max);
         }
     }
+
+    for(int i = 0; i < qtd_paredes; i++) {
+        remove_tail(anteparos);
+    }
+
+    free_lista(paredes_mundo, (void(*)(void*))destrutor_forma);
+    free(f_box);
+    destrutorRetangulo(box_mundo);
 
     free(eventos);
     free_arvore(seg_ativos);

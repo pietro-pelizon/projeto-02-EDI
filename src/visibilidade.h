@@ -12,17 +12,15 @@ typedef struct stEvento evento;
 /// @brief Estrutura interna para segmentos ativos na AVL durante a varredura
 typedef struct stSegmento_ativo segmento_ativo;
 
-/// @brief Calcula a distância da bomba até onde o raio bate no anteparo
-/// @param a Anteparo a ser testado
-/// @param p_bomba Ponto de origem da bomba
-/// @param angulo Direção do raio em radianos
-/// @return Distância até a interseção, ou DBL_MAX se não bater
-double calc_dist_anteparo_bomba(anteparo *a, ponto *p_bomba, double angulo, double raio_max);
-
 /// @brief Prepara informações dos segmentos para a varredura
 /// @param bomba Ponto de origem da explosão
 /// @param anteparos Lista de anteparos
-/// @return Lista com informações calculadas (liberar com free_lista após uso)
+/// @return O array de 'evento' aonde contém as informações
+/// @details O array de eventos contém os seguintes dados para cada ponto do anteparo:
+/// ângulo do ponto em relação à bomba;
+/// distância do ponto em relação à bomba;
+/// tipo do ponto (início ou fim);
+/// e o anteparo em si
 evento *preparar_segmentos(ponto *bomba, lista *anteparos, int *num_eventos);
 
 /// @brief Lança um raio e retorna onde ele para usando a AVL
@@ -38,7 +36,7 @@ ponto *raio_ate_anteparo_avl(arvore *seg_ativos, ponto *bomba, double angulo, do
 /// @param anteparos Lista de anteparos que bloqueiam a visão
 /// @param tipo_ord Tipo de ordenação: 'q' para qsort, 'm' para mergesort
 /// @param raio_max Alcance máximo da explosão
-/// @param threshold_i Limite para insertionsort no mergesort (ignorado se tipo_ord='q')
+/// @param threshold_i Limite para insertionsort no mergesort (ignorado se tipo_ord = 'q')
 /// @return Polígono da região visível (liberar com free_poligono após uso)
 poligono *calc_regiao_visibilidade(ponto *bomba, lista *anteparos, char tipo_ord, double raio_max, int threshold_i);
 
