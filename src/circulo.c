@@ -5,8 +5,6 @@
 #include "circulo.h"
 
 #include "anteparo.h"
-#include "linha.h"
-#include "ponto.h"
 
 #define PI 3.14159265358
 

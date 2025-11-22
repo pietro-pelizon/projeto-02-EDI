@@ -3,6 +3,7 @@
 #include <assert.h>
 #include <stdio.h>
 #include <stdlib.h>
+#include <stdbool.h>
 
 typedef struct stNode {
     void *data;
@@ -73,8 +74,8 @@ void *get_node_dataAVL(node_AVL *n) {
     return n -> data;
 }
 
-bool is_empty_bst(arvore *bst) {
-    if (bst -> tamanho == 0) {
+bool is_empty_avl(arvore *avl) {
+    if (avl -> tamanho == 0) {
         return true;
     }
 
@@ -128,7 +129,7 @@ static node_AVL *rotate_left_right(node_AVL *r) {
 static node_AVL *create_node(void *data) {
     node_AVL *node = malloc (sizeof(node_AVL));
     if (node == NULL) {
-        printf("DEBUG: Erro ao criar nó para a BST!\n");
+        printf("DEBUG: Erro ao criar nó para a árvore!\n");
         return NULL;
     }
 
@@ -171,7 +172,7 @@ static node_AVL *balancear(node_AVL *r) {
 static node_AVL *insert_bst(arvore *t, node_AVL *node, void *data) {
     if (node == NULL) {
         node_AVL *new_node = create_node(data);
-        t -> tamanho++;
+        if (new_node != NULL) t -> tamanho++;
         return new_node;
     }
 

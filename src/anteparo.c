@@ -1,16 +1,9 @@
 #include "anteparo.h"
 #include "geometria.h"
 #include "ponto.h"
-#include <float.h>
-#include <math.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-
-#include "formas.h"
-#include "linha.h"
-#include "poligono.h"
-#include "visibilidade.h"
 
 #define EPSILON 1e-10
 

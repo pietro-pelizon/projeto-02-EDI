@@ -1,7 +1,6 @@
 #ifndef PROJETO_02_EDI_GEOMETRIA_H
 #define PROJETO_02_EDI_GEOMETRIA_H
 #include "ponto.h"
-#include <math.h>
 #include <stdbool.h>
 
 #include "anteparo.h"
@@ -62,5 +61,12 @@ bool is_ponto_no_segmento(double px, double py, double qx, double qy, double rx,
 /// @param a Segmento para o segmento de reta (anteparo)
 /// @return Retorna a distância
 double calcular_distancia_ponto_segmento(ponto *p, anteparo *a);
+
+/// @brief Calcula a distância da bomba até onde o raio bate no anteparo
+/// @param a Anteparo a ser testado
+/// @param p_bomba Ponto de origem da bomba
+/// @param angulo Direção do raio em radianos
+/// @return Distância até a interseção, ou DBL_MAX se não bater
+double calc_dist_anteparo_bomba(anteparo *a, ponto *p_bomba, double angulo, double raio_max);
 
 #endif //PROJETO_02_EDI_GEOMETRIA_H

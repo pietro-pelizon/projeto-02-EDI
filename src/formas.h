@@ -126,12 +126,6 @@ void alterna_cores_forma(forma *f);
 /// @param svg: Ponteiro para o arquivo svg.
 void desenha_forma_svg(forma *f, FILE *svg);
 
-/// @brief: Dado o tipo da forma, pega seus dados e gera um relatório no arquivo txt.
-/// @param f: Ponteiro para a forma.
-/// @param txt: Arquivo .txt aonde as informações serão escritas.
-/// @param reportDaFuncaoQRY: Começo padrão que será adicionado conforme a função do .qry.
-void escreveDadosFormaTxt(forma *f, FILE *txt, const char *reportDaFuncaoQRY);
-
 /// @brief: Obtém a coordenada X principal (âncora) de uma forma genérica.
 /// @param f: Ponteiro para a forma genérica.
 /// @return: O valor da coordenada X. Retorna 0.0 se a forma for nula ou inválida.

@@ -1,7 +1,6 @@
 #ifndef CIRCULO_H
 #define CIRCULO_H
 #include "anteparo.h"
-#include "linha.h"
 
 
 /* ------- TAD CIRCULO -------

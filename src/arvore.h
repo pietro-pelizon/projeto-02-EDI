@@ -43,13 +43,15 @@ node_AVL *get_direita_node(node_AVL *n);
 void *get_node_dataAVL(node_AVL *n);
 
 /// @brief Verifica se uma árvore está vazia
-/// @param bst Ponteiro para a árvore binária de busca
+/// @param avl Ponteiro para a árvore binária de busca
 /// @return Retorna true caso a árvore esteja vazia e false caso o contrário
-bool is_empty_bst(arvore *bst);
+bool is_empty_avl(arvore *avl);
 
 /// @brief Insere um novo nó na árvore
 /// @param t Ponteiro para a árvore
 /// @param data Dado a ser inserido
+/// @note A árvore não devolve o dado caso ele seja
+/// duplicado, ela o destrói
 void arvore_insere(arvore *t, void *data);
 
 /// @brief Faz uma busca binária na árvore

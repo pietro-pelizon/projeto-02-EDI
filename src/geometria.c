@@ -1,5 +1,10 @@
 #include "geometria.h"
+
+#include <float.h>
+
 #include "linha.h"
+#include <math.h>
+#include <stddef.h>
 
 #define EPSILON 1e-10
 #define PI 3.14159265358
@@ -10,7 +15,12 @@ double calcula_angulo(ponto *obs, ponto *principal) {
     double p_x = get_x_ponto(principal);
     double p_y = get_y_ponto(principal);
 
-    return atan2(p_y - obs_y, p_x - obs_x);
+    double angulo = atan2(p_y - obs_y, p_x - obs_x);
+    if (angulo < 0) {
+        angulo += 2.0 * PI;
+    }
+
+    return angulo;
 }
 
 double distancia_quadrada(double x1, double y1, double x2, double y2) {
@@ -54,4 +64,39 @@ double calcular_distancia_ponto_segmento(ponto *p, anteparo *a) {
     double proj_y = y1 + t * dy;
 
     return sqrt(distancia_quadrada(px, py, proj_x, proj_y));
+}
+
+double calc_dist_anteparo_bomba(anteparo *a, ponto *p_bomba, double angulo, double raio_max) {
+    if (a == NULL || p_bomba == NULL) return DBL_MAX;
+
+    double bx = get_x_ponto(p_bomba);
+    double by = get_y_ponto(p_bomba);
+
+    double rx = bx + raio_max * cos(angulo);
+    double ry = by + raio_max * sin(angulo);
+
+    ponto *p0 = get_p0_anteparo(a);
+    ponto *p1 = get_p1_anteparo(a);
+    if (p0 == NULL || p1 == NULL) return DBL_MAX;
+
+    double s1x = get_x_ponto(p0);
+    double s1y = get_y_ponto(p0);
+    double s2x = get_x_ponto(p1);
+    double s2y = get_y_ponto(p1);
+
+    double denom = (s2y - s1y) * (rx - bx) - (s2x - s1x) * (ry - by);
+
+    if (fabs(denom) < EPSILON) return DBL_MAX;
+
+    double ua = ((s2x - s1x) * (by - s1y) - (s2y - s1y) * (bx - s1x)) / denom;
+    double ub = ((rx - bx) * (by - s1y) - (ry - by) * (bx - s1x)) / denom;
+
+    if (ua >= -EPSILON && ua <= 1.0 + EPSILON && ub >= -EPSILON && ub <= 1.0 + EPSILON) {
+        double dist = ua * raio_max;
+
+        if (dist >= -EPSILON && dist <= raio_max + EPSILON) {
+            return (dist < 0) ? 0 : dist;
+        }
+    }
+    return DBL_MAX;
 }

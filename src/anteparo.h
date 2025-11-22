@@ -1,10 +1,17 @@
-#ifndef PROJETO_02_EDI_ANTEPARO_H
-#define PROJETO_02_EDI_ANTEPARO_H
+#ifndef ANTEPARO_H
+#define ANTEPARO_H
 
 #include "anteparo.h"
-#include "lista.h"
 #include "ponto.h"
 
+/*
+    O anteparo é, em essência, um 'objeto' do tipo
+    linha, só que melhorado com a capacidade
+    de aguentar o impacto da bomba e proteger as
+    demais formas que não estão na região de visibilidade
+*/
+
+// O 'objeto' anteparo
 typedef struct stAnteparo anteparo;
 
 /// @brief Inicializa um anteparo com extremos com coordena (x0, y0) e (x1, y1)
