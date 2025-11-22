@@ -92,7 +92,8 @@ int main(int argc, char *argv[]) {
 
     // --- 4. Criando o arquivo .svg com todas as formas iniciais ---
     printf("Gerando arquivo .svg inicial: %s\n", path_svg_inicial);
-    gerar_arquivo_svg(path_svg_inicial, formas);
+    FILE *arq_svg_inicial = gerar_arquivo_svg(path_svg_inicial, formas);
+    fecha_svg(arq_svg_inicial);
 
     // --- 5. Processamento do arquivo .qry ---
     if (path_qry != NULL) {
@@ -119,12 +120,16 @@ int main(int argc, char *argv[]) {
 
         printf("Threshold insertion sort: %d\n", threshold_i);
 
+        FILE *svg_final = inicializa_svg(path_svg_final);
         lista *anteparos = init_lista();
-        parser_qry(formas, anteparos, path_qry_completo, path_txt_final, threshold_i, tipo_ord, path_saida, nome_base_final);
+        parser_qry(formas, anteparos, path_qry_completo, path_txt_final, threshold_i, tipo_ord, path_saida, nome_base_final, svg_final);
+
+        if (svg_final) {
+            desenhar_formas_no_svg(svg_final, formas);
+            fecha_svg(svg_final);
+        }
 
         printf("Gerando arquivo .svg final: %s\n", path_svg_final);
-        gerar_arquivo_svg(path_svg_final, formas);
-
 
         printf("Arquivo .txt de log gerado: %s\n", path_txt_final);
         free_lista(anteparos, (void(*)(void*))destrutor_forma);
