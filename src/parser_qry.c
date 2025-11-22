@@ -107,8 +107,11 @@ static void comando_d(int threshold_i, char tipo_ord, char *buffer, lista *forma
 
     sscanf(buffer, "d %lf %lf %s", &x_impacto, &y_impacto, sfx);
 
-    double raio_max = 10000.0;
+    double raio_max = 600.0;
     ponto *bomba = init_ponto(x_impacto, y_impacto);
+
+    printf("DEBUG: Tamanho da lista anteparos antes do calculo: %d\n", get_tam_lista(anteparos));
+
     poligono *vis = calc_regiao_visibilidade(bomba, anteparos, tipo_ord, raio_max, threshold_i);
 
     fprintf(arquivo_txt, "[*] d %.2lf %.2lf %s\n", x_impacto, y_impacto, sfx);
@@ -190,7 +193,7 @@ static void comando_p(lista *formas, lista *anteparos, FILE *arquivo_txt, char *
     sscanf(buffer, "p %lf %lf %s %s", &x_impacto, &y_impacto, cor, sfx);
     ponto *bomba = init_ponto(x_impacto, y_impacto);
 
-    double raio_max = 10000.0;
+    double raio_max = 600.0;
     poligono *vis = calc_regiao_visibilidade(bomba, anteparos, tipo_ord, raio_max, threshold_i);
 
     node *head = get_head_node(formas);
@@ -249,7 +252,7 @@ static void comando_cln(lista *formas, lista *anteparos, FILE *arquivo_txt,
     sscanf(buffer, "cln %lf %lf %lf %lf %s", &x_impacto, &y_impacto, &dx_translacao, &dy_translacao, sfx);
 
     ponto *bomba = init_ponto(x_impacto, y_impacto);
-    double raio_max = 10000.0;;
+    double raio_max = 600.0;
     poligono *vis = calc_regiao_visibilidade(bomba, anteparos, tipo_ord, raio_max, threshold_i);
 
     node *head = get_head_node(formas);
