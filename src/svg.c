@@ -94,7 +94,7 @@ void insere_texto(FILE *svg, texto *t) {
 	fprintf(svg, ">%s</text>\n", getTxtoTexto(t));
 }
 
-void insere_poligono_visibilidade(FILE *svg, poligono *p, const char *cor) {
+void insere_poligono_visibilidade(FILE *svg, poligono *p) {
 	if (p == NULL || svg == NULL) return;
 
 	int n = get_num_vertices(p);
@@ -108,8 +108,7 @@ void insere_poligono_visibilidade(FILE *svg, poligono *p, const char *cor) {
 		free_ponto(v);
 	}
 
-	fprintf(svg, "\" fill=\"%s\" fill-opacity=\"0.3\" stroke=\"%s\" stroke-width=\"2\" />\n",
-			cor, cor);
+	fprintf(svg, "\" fill=\"#FF0000\" fill-opacity=\"0.2\" stroke=\"#FF0000\" stroke-width=\"2\" />\n");
 }
 
 void insere_anteparo(FILE *svg, anteparo *a) {
@@ -150,21 +149,47 @@ void fecha_svg(FILE *svg) {
 }
 
 
+void insere_bomba_svg(FILE *svg, double x, double y) {
+	if (svg == NULL) return;
+
+	fprintf(svg, "<circle cx=\"%lf\" cy=\"%lf\" r=\"1\" stroke-opacity=\"0.5\" fill=\"none\""
+			  " stroke=\" #FF0000\" stroke-width=\"2\" stroke-dasharray=\"1, 1\" />\n", x, y);
+
+	fprintf(svg, "<circle cx=\"%lf\" cy=\"%lf\" r=\"3\" stroke-opacity=\"0.5\" fill=\"none\""
+			  " stroke=\" #FF0000\" stroke-width=\"2\" stroke-dasharray=\"1, 1\" />\n", x, y);
+
+	fprintf(svg, "<circle cx=\"%lf\" cy=\"%lf\" r=\"2\" stroke-opacity=\"0.5\" fill=\"none\""
+			  " stroke=\"#FF00FF\" stroke-width=\"2\" stroke-dasharray=\"1, 1\" />\n", x, y);
+}
+
 void acao_desenhar(void* item, void* aux) {
 	FILE* arquivo_svg = (FILE*)aux;
 	desenha_forma_svg((forma*)item, arquivo_svg);
 }
 
-void gerar_arquivo_svg(const char *nome_svg, lista *lista_formas) {
+void desenhar_formas_no_svg(FILE *svg, lista *formas) {
+	if (svg == NULL || formas == NULL) return;
+
+	node *atual = get_head_node(formas);
+
+	while (atual != NULL) {
+		forma *f = get_node_data(atual);
+		desenha_forma_svg(f, svg);
+
+		atual = go_next_node(atual);
+	}
+}
+
+FILE *gerar_arquivo_svg(const char *nome_svg, lista *lista_formas) {
 	if (lista_formas == NULL) {
-		fprintf(stderr, "Aviso: filaDeFormas NULL em gerarArquivoSvg(%s)\n", nome_svg);
-		return;
+		fprintf(stderr, "Aviso: lista de formas NULL em 'gerar_arquivo_svg'(%s)\n", nome_svg);
+		return NULL;
 	}
 
 	FILE *arquivo_svg = inicializa_svg(nome_svg);
 	if (arquivo_svg == NULL) {
 		printf("Erro ao abrir o arquivo svg!\n");
-		return;
+		return NULL;
 	}
 
 	node *no_atual = get_head_node(lista_formas);
@@ -177,8 +202,7 @@ void gerar_arquivo_svg(const char *nome_svg, lista *lista_formas) {
 		no_atual = go_next_node(no_atual);
 	}
 
-	fecha_svg(arquivo_svg);
 
-	printf("Arquivo .svg gerado com sucesso!\n");
+	return arquivo_svg;
 
 }

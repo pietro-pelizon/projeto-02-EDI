@@ -58,8 +58,8 @@ void insere_linha(FILE *svg, linha *l);
 /// @brief Insere o polígono de visibilidade no arquivo .svg
 /// @param svg Arquivo .svg
 /// @param p Ponteiro para o polígono
-/// @param cor Cor do polígono (definida como VERMELHO)
-void insere_poligono_visibilidade(FILE *svg, poligono *p, const char *cor);
+/// @param cor Cor do polígono
+void insere_poligono_visibilidade(FILE *svg, poligono *p);
 
 /// @brief Insere um anteparo em um arquivo do tipo .svg
 /// @param svg Ponteiro para o arquivo .svg
@@ -80,9 +80,20 @@ void fecha_svg(FILE *svg);
 /// @param aux: Dado auxiliar, caso necessário.
 void acao_desenhar(void* item, void* aux);
 
+/// @brief
+/// @param svg
+/// @param formas
+void desenhar_formas_no_svg(FILE *svg, lista *formas);
+
+/// @brief
+/// @param svg
+/// @param x
+/// @param y
+void insere_bomba_svg(FILE *svg, double x, double y);
+
 /// @brief: Função que recebe as formas que serão adicionadas ao .svg criado.
 /// @param nome_svg: Nome do arquivo .svg.
 /// @param lista_formas: Lista  contendo as formas que serão adicionadas ao .svg.
-void gerar_arquivo_svg(const char *nome_svg, lista *lista_formas);
+FILE *gerar_arquivo_svg(const char *nome_svg, lista *lista_formas);
 
 #endif //SVG_H
