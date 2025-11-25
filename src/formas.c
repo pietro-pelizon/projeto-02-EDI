@@ -164,7 +164,6 @@ forma *clona_forma(forma *f_original) {
 		case TEXTO: {
 			texto *t = (texto*)dados_orig;
 			estilo *e_orig = getEstiloTexto(t);
-			estilo *novo = criaCopiaEstilo(e_orig);
 			novos_dados = criaTexto(novo_id,
 				getXTexto(t),
 				getYTexto(t),
@@ -172,7 +171,7 @@ forma *clona_forma(forma *f_original) {
 				getCorpTexto(t),
 				getATexto(t),
 				getTxtoTexto(t),
-				novo);
+				e_orig);
 			break;
 		}
 		case ANTEPARO: {
