@@ -14,6 +14,7 @@ static bool sobrepoe_circulo_poligono(circulo *c, poligono *p);
 static bool sobrepoe_retangulo_poligono(retangulo *r, poligono *p);
 static bool sobrepoe_linha_poligono(linha *l, poligono *p);
 static bool sobrepoe_texto_poligono(texto *t, poligono *p);
+static bool sobrepoe_anteparo_poligono(anteparo *pp, poligono *p);
 
 bool forma_sobrepoe_poligono(forma *f, poligono *p) {
     if (f == NULL || p == NULL) return false;
@@ -26,11 +27,9 @@ bool forma_sobrepoe_poligono(forma *f, poligono *p) {
         case RETANGULO: return sobrepoe_retangulo_poligono((retangulo*)dados_forma, p);
         case LINHA: return sobrepoe_linha_poligono((linha*)dados_forma, p);
         case TEXTO: return sobrepoe_texto_poligono((texto*)dados_forma, p);
-        case ANTEPARO: printf("Cálculo de sobreposição entre anteparos não faz sentido para a lógica do projeto!\n"); break;
+        case ANTEPARO: return sobrepoe_anteparo_poligono((anteparo*)dados_forma, p);
         default: return false;
     }
-
-    return false;
 }
 
 static bool ponto_dentro_retangulo(retangulo *r, ponto *pt) {
@@ -247,6 +246,60 @@ static bool sobrepoe_circulo_poligono(circulo *c, poligono *p) {
 
     free_lista(bordas_poligono, (void (*)(void *))destrutorLinha);
 
+    return intersecao;
+}
+
+static bool sobrepoe_anteparo_linha(anteparo *l1, linha *l2) {
+    double p0_x = get_x_p0(l1);
+    double p0_y = get_y_p0(l1);
+    double p1_x = get_x_p1(l1);
+    double p1_y = get_y_p1(l1);
+
+    double p2_x = getX1Linha(l2);
+    double p2_y = getY1Linha(l2);
+    double p3_x = getX2Linha(l2);
+    double p3_y = getY2Linha(l2);
+
+    int o1 = produto_vetorial(p0_x, p0_y, p1_x, p1_y, p2_x, p2_y);
+    int o2 = produto_vetorial(p0_x, p0_y, p1_x, p1_y, p3_x, p3_y);
+    int o3 = produto_vetorial(p2_x, p2_y, p3_x, p3_y, p0_x, p0_y);
+    int o4 = produto_vetorial(p2_x, p2_y, p3_x, p3_y, p1_x, p1_y);
+
+    if (o1 != o2 && o3 != o4) {
+        return true;
+    }
+
+    if (o1 == 0 && is_ponto_no_segmento(p0_x, p0_y, p2_x, p2_y, p1_x, p1_y)) return true;
+    if (o2 == 0 && is_ponto_no_segmento(p0_x, p0_y, p3_x, p3_y, p1_x, p1_y)) return true;
+    if (o3 == 0 && is_ponto_no_segmento(p2_x, p2_y, p0_x, p0_y, p3_x, p3_y)) return true;
+    if (o4 == 0 && is_ponto_no_segmento(p2_x, p2_y, p1_x, p1_y, p3_x, p3_y)) return true;
+
+    return false;
+}
+
+static bool sobrepoe_anteparo_poligono(anteparo *pp, poligono *p) {
+    if (is_inside(p, get_x_p0(pp), get_y_p0(pp))) {
+        return true;
+    }
+    if (is_inside(p, get_x_p1(pp), get_y_p1(pp))) {
+        return true;
+    }
+
+    lista *bordas_poligono = get_segmentos(p);
+    node *no_borda = get_head_node(bordas_poligono);
+    bool intersecao = false;
+
+    while (no_borda != NULL) {
+        linha *borda = (linha*) get_node_data(no_borda);
+
+        if (sobrepoe_anteparo_linha(pp, borda)) {
+            intersecao = true;
+            break;
+        }
+        no_borda = go_next_node(no_borda);
+    }
+
+    free_lista(bordas_poligono, (void (*)(void *))destrutorLinha);
     return intersecao;
 }
 
