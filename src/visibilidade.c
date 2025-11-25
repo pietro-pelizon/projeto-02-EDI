@@ -12,6 +12,7 @@
 
 #define PI 3.14159265358
 #define EPSILON 1e-10
+#define EPSILON_ANGULAR 1e-7
 
 typedef enum enum_tipo_evento {
     INICIO,
@@ -36,48 +37,44 @@ static int cmp_eventos(const void *a, const void *b) {
     evento *e1 = (evento*)a;
     evento *e2 = (evento*)b;
 
-    if (e1 -> angulo < e2 -> angulo - EPSILON) return -1;
-    if (e1 -> angulo > e2 -> angulo + EPSILON) return 1;
+    // Se ângulos são muito próximos, trato como o mesmo ângulo
+    if (fabs(e1 -> angulo - e2 -> angulo) < EPSILON_ANGULAR) {
+        // Prioridade absoluta: INICIO antes de FIM
+        if (e1 -> tipo != e2 -> tipo) {
+            return (e1->tipo == INICIO) ? -1 : 1;
+        }
 
-    if (e1 -> tipo < e2 -> tipo) return -1;
-    if (e1 -> tipo > e2 -> tipo) return 1;
+        // Desempate por distância
+        if (e1 -> distancia_estatica < e2 -> distancia_estatica - EPSILON) return -1;
+        if (e1 -> distancia_estatica > e2 -> distancia_estatica + EPSILON) return 1;
+        return 0;
+    }
 
-    if (e1 -> distancia_estatica < e2 -> distancia_estatica - EPSILON) return -1;
-    if (e1->distancia_estatica > e2 -> distancia_estatica + EPSILON) return 1;
-
-    return 0;
+    if (e1 -> angulo < e2 -> angulo) return -1;
+    return 1;
 }
 
+// Normaliza os ângulos e elimina casos negativos
 static double normalizar_angulo(double ang) {
     while (ang < 0) ang += 2.0 * PI;
+
     while (ang >= 2.0 * PI) ang -= 2.0 * PI;
+
     return ang;
 }
 
 static void free_segmento_ativo(void *data) {
-    if (data) {
-        free(data);
-    }
+    if (data) free(data);
 }
 
-static bool validar_ponto(ponto *p, ponto *bomba, double raio_max) {
+// Função que valida os pontos do polígono
+// (verifica se deve ser adicionado ao polígono de visibilidade)
+static bool validar_ponto(ponto *p, ponto *bomba) {
     if (p == NULL || bomba == NULL) return false;
-
-    double dx = get_x_ponto(p) - get_x_ponto(bomba);
-    double dy = get_y_ponto(p) - get_y_ponto(bomba);
-
-    double dist_sq = dx * dx + dy * dy;
-    double raio_max_sq = raio_max * raio_max;
-
-    if (dist_sq < 0.0001) return false;
-
-    if (dist_sq >= raio_max_sq * 0.999) {
-        printf("DEBUG: Ponto descartado por estar no limite do raio (infinito)\n");
-        return false;
-    }
 
     double x = get_x_ponto(p);
     double y = get_y_ponto(p);
+
     if (!isfinite(x) || !isfinite(y)) return false;
 
     return true;
@@ -87,49 +84,52 @@ static int comparar_segmentos_ativos(const void *a, const void *b) {
     segmento_ativo *sa = (segmento_ativo*)a;
     segmento_ativo *sb = (segmento_ativo*)b;
 
-
     if (sa -> dist_bomba < sb -> dist_bomba - EPSILON) return -1;
     if (sa -> dist_bomba > sb -> dist_bomba + EPSILON) return 1;
 
     if (sa -> id < sb -> id) return -1;
     if (sa -> id > sb -> id) return 1;
-
     return 0;
 }
 
+// Busca pelo anteparo que tem a menor distância no disparo
+// do raio atual efetuado pela função 'raio_ate_anteparo_AVL'
+//
+// É essencial para definir, de todos os anteparos ativos na árvore,
+// quem o raio atinge primeiro (quem está bloqueando a visão)
 static void buscar_intersecao_avl_rec(node_AVL *node, ponto *bomba, double angulo, double *dist_min, ponto **ponto_intersecao, double raio_max) {
     if (node == NULL) return;
 
     buscar_intersecao_avl_rec(get_esquerda_node(node), bomba, angulo, dist_min, ponto_intersecao, raio_max);
 
     segmento_ativo *sa = (segmento_ativo*)get_node_dataAVL(node);
-
-    double dist = calc_dist_anteparo_bomba(sa->seg, bomba, angulo, raio_max);
+    double dist = calc_dist_anteparo_bomba(sa -> seg, bomba, angulo, raio_max);
 
     if (dist < *dist_min) {
         *dist_min = dist;
 
         if (*ponto_intersecao != NULL) free_ponto(*ponto_intersecao);
-
         double x = get_x_ponto(bomba) + dist * cos(angulo);
         double y = get_y_ponto(bomba) + dist * sin(angulo);
+
         *ponto_intersecao = init_ponto(x, y);
     }
 
     buscar_intersecao_avl_rec(get_direita_node(node), bomba, angulo, dist_min, ponto_intersecao, raio_max);
 }
 
+// Atualiza a AVL a cada repetição do algoritmo de sweep line
+//
+// Ativa o segmento caso seja do tipo INICIO
+// Desativo caso seja do tipo FIM
 static void update_evento_arvore(arvore *seg_ativo, evento *e) {
     if (e -> tipo == INICIO) {
-        segmento_ativo *novo_ativo = malloc (sizeof(segmento_ativo));
-
+        segmento_ativo *novo_ativo = malloc(sizeof(segmento_ativo));
         if (novo_ativo != NULL) {
             novo_ativo -> id = e -> id;
             novo_ativo -> seg = e -> segmento;
             novo_ativo -> dist_bomba = e -> distancia_estatica;
-
             arvore_insere(seg_ativo, novo_ativo);
-            printf("DEBUG: Inserido ID %d\n", e -> id);
         }
     }
 
@@ -137,37 +137,20 @@ static void update_evento_arvore(arvore *seg_ativo, evento *e) {
         segmento_ativo chave_busca;
         chave_busca.id = e -> id;
         chave_busca.dist_bomba = e -> distancia_estatica;
-
         void *seg_removido = remove_node(seg_ativo, &chave_busca);
-
-        if (seg_removido) {
-            free(seg_removido);
-        }
+        if (seg_removido) free(seg_removido);
     }
 }
 
+// Caso o ponto seja válido, o insere no polígono de visibilidade
 static void capturar_ponto_visibilidade(poligono *visibilidade, arvore *seg_ativos, ponto *bomba, double angulo, double raio_max) {
     ponto *p = raio_ate_anteparo_avl(seg_ativos, bomba, angulo, raio_max);
-
     if (p != NULL) {
-        if (validar_ponto(p, bomba, raio_max)) {
+        if (validar_ponto(p, bomba)) {
             insert_ponto_poligono(visibilidade, p);
         }
         free_ponto(p);
     }
-}
-
-static bool deve_processar_raio(int index_atual, int num_total_eventos, evento *e) {
-    if (index_atual == num_total_eventos - 1) return true;
-
-    double angulo_atual = e[index_atual].angulo;
-    double angulo_proximo = e[index_atual + 1].angulo;
-
-    if (angulo_proximo - angulo_atual > EPSILON) {
-        return true;
-    }
-
-    return false;
 }
 
 ponto *raio_ate_anteparo_avl(arvore *seg_ativos, ponto *bomba, double angulo, double raio_max) {
@@ -179,12 +162,8 @@ ponto *raio_ate_anteparo_avl(arvore *seg_ativos, ponto *bomba, double angulo, do
 
     ponto *p_intersecao = NULL;
     double dist_min = raio_max;
-
     buscar_intersecao_avl_rec(get_root(seg_ativos), bomba, angulo, &dist_min, &p_intersecao, raio_max);
-
-    if (p_intersecao != NULL) {
-        return p_intersecao;
-    }
+    if (p_intersecao != NULL) return p_intersecao;
 
     double x = get_x_ponto(bomba) + raio_max * cos(angulo);
     double y = get_y_ponto(bomba) + raio_max * sin(angulo);
@@ -196,13 +175,7 @@ evento *preparar_segmentos(ponto *bomba, lista *anteparos, int *num_eventos) {
 
     int size_lista = get_tam_lista(anteparos);
     int max_eventos = 4 * size_lista;
-
-
-    evento *vetor_eventos = malloc (max_eventos * sizeof(evento));
-    if (vetor_eventos == NULL) {
-        printf("DEBUG: Erro ao alocar vetor de eventos!\n");
-        return NULL;
-    }
+    evento *vetor_eventos = malloc(max_eventos * sizeof(evento));
 
     node *atual = get_head_node(anteparos);
     int k = 0;
@@ -213,83 +186,50 @@ evento *preparar_segmentos(ponto *bomba, lista *anteparos, int *num_eventos) {
         ponto *p0 = get_p0_anteparo(a);
         ponto *p1 = get_p1_anteparo(a);
 
+        double ang1 = normalizar_angulo(calcula_angulo(bomba, p0));
+        double ang2 = normalizar_angulo(calcula_angulo(bomba, p1));
 
-        vetor_eventos -> segmento = a;
-        vetor_eventos -> id = get_id_anteparo(a);
-
-        double angulo1 = normalizar_angulo(calcula_angulo(bomba, p0));
-        double angulo2 = normalizar_angulo(calcula_angulo(bomba, p1));
-
-        if (fabs(angulo1 - angulo2) < 0.0000001) {
-            angulo2 += 0.000001;
+        // Jittering para segmentos finos
+        // Impede que INICIO == FIM, garantindo processamento
+        if (fabs(ang1 - ang2) < 1e-9) {
+            ang2 += 1e-8;
         }
 
-        if (angulo1 > angulo2) {
-            double temp = angulo1;
-            angulo1 = angulo2;
-            angulo2 = temp;
-            }
+        double diff = ang2 - ang1;
+        if (diff < 0) diff += 2.0 * PI;
+
+        if (diff > PI) {
+            double temp = ang1;
+            ang1 = ang2;
+            ang2 = temp;
+        }
 
         double dist = calcular_distancia_ponto_segmento(bomba, a);
+        int id = get_id_anteparo(a);
 
-        if (angulo2 - angulo1 > PI) {
+        if (ang2 - ang1 > PI) {
+            vetor_eventos[k++] = (evento){id, ang2, dist, INICIO, a};
+            vetor_eventos[k++] = (evento){id, 2 * PI + 1e-9, dist, FIM, a};
 
-            vetor_eventos[k].angulo = angulo2;
-            vetor_eventos[k].tipo = INICIO;
-            vetor_eventos[k].segmento = a;
-            vetor_eventos[k].distancia_estatica = dist;
-            vetor_eventos[k].id = get_id_anteparo(a);
-            k++;
-
-            vetor_eventos[k].angulo = 2 * PI;
-            vetor_eventos[k].tipo = FIM;
-            vetor_eventos[k].segmento = a;
-            vetor_eventos[k].distancia_estatica = dist;
-            vetor_eventos[k].id = get_id_anteparo(a);
-            k++;
-
-            vetor_eventos[k].angulo = 0.0;
-            vetor_eventos[k].tipo = INICIO;
-            vetor_eventos[k].segmento = a;
-            vetor_eventos[k].distancia_estatica = dist;
-            vetor_eventos[k].id = get_id_anteparo(a);
-            k++;
-
-            vetor_eventos[k].angulo = angulo1;
-            vetor_eventos[k].tipo = FIM;
-            vetor_eventos[k].segmento = a;
-            vetor_eventos[k].distancia_estatica = dist;
-            vetor_eventos[k].id = get_id_anteparo(a);
-            k++;
+            vetor_eventos[k++] = (evento){id, 0.0, dist, INICIO, a};
+            vetor_eventos[k++] = (evento){id, ang1, dist, FIM, a};
         }
 
         else {
-            vetor_eventos[k].angulo = angulo1;
-            vetor_eventos[k].tipo = INICIO;
-            vetor_eventos[k].segmento = a;
-            vetor_eventos[k].distancia_estatica = dist;
-            vetor_eventos[k].id = get_id_anteparo(a);
-            k++;
-
-            vetor_eventos[k].angulo = angulo2;
-            vetor_eventos[k].tipo = FIM;
-            vetor_eventos[k].segmento = a;
-            vetor_eventos[k].distancia_estatica = dist;
-            vetor_eventos[k].id = get_id_anteparo(a);
-            k++;
+            vetor_eventos[k++] = (evento){id, ang1, dist, INICIO, a};
+            vetor_eventos[k++] = (evento){id, ang2, dist, FIM, a};
         }
-
         atual = go_next_node(atual);
     }
 
     *num_eventos = k;
-
     return vetor_eventos;
 }
 
 poligono *calc_regiao_visibilidade(ponto *bomba, lista *anteparos, char tipo_ord, double raio_max, int threshold_i) {
     poligono *visibilidade = init_poligono();
 
+    // 1. PAREDES DO MUNDO
     retangulo *box_mundo = criaRetangulo(-1, -10, -10, 1010, 1010, "none", "none");
     forma *f_box = cria_forma(-1, RETANGULO, box_mundo);
     lista *paredes_mundo = forma_anteparo(f_box, 'h');
@@ -297,54 +237,59 @@ poligono *calc_regiao_visibilidade(ponto *bomba, lista *anteparos, char tipo_ord
     int qtd_paredes = 0;
     node *aux = get_head_node(paredes_mundo);
     while(aux != NULL) {
-        forma *seg_forma = get_node_data(aux);
-        insert_tail(anteparos, seg_forma);
+        insert_tail(anteparos, get_node_data(aux));
         qtd_paredes++;
         aux = go_next_node(aux);
     }
 
-
     int num_eventos = 0;
     evento *eventos = preparar_segmentos(bomba, anteparos, &num_eventos);
 
+    // 2. CASO SEM NENHUM ANTEPARO -> SIMPLESMENTE CRIA UM CÍRCULO QUE ABRANGE A ÁREA TODA
     if (num_eventos == 0) {
-        // Caso sem anteparos nenhum,
-        // cria um círculo grande o suficiente
-        // para abranger todas as formas
         for (int i = 0; i < 32; i++) {
             double ang = (2.0 * PI * i) / 32.0;
             double x = get_x_ponto(bomba) + raio_max * cos(ang);
             double y = get_y_ponto(bomba) + raio_max * sin(ang);
             insert_vertice(visibilidade, x, y);
         }
-        free(eventos);
-
-        return visibilidade;
+        free(eventos); return visibilidade;
     }
 
-
+    // 3. ORDENAÇÃO -> ORDENA OS EVENTOS CONFORME O ÂNGULO OBTIDO ENTRE O PONTO DA BOMBA E O PONTO (p0 ou p1) DO ANTEPARO
     if (tipo_ord == 'm') {
-        int threshold = (threshold_i > 0) ? threshold_i : 10;
-        merge_sort_generico(eventos, num_eventos, sizeof(evento), cmp_eventos, threshold);
-    }
-
-    else {
+        merge_sort_generico(eventos, num_eventos, sizeof(evento), cmp_eventos, threshold_i);
+    } else {
         qsort(eventos, num_eventos, sizeof(evento), cmp_eventos);
     }
 
     arvore *seg_ativos = init_arvore(comparar_segmentos_ativos, free_segmento_ativo, NULL);
 
-    // Algoritmo de sweep line
+    // 4. PRÉ-CARREGAMENTO (Segmentos que cruzam o zero)
     for (int i = 0; i < num_eventos; i++) {
-        evento *atual = &eventos[i];
-
-        update_evento_arvore(seg_ativos, atual);
-
-        if (deve_processar_raio(i, num_eventos, eventos)) {
-            capturar_ponto_visibilidade(visibilidade, seg_ativos, bomba, atual -> angulo, raio_max);
+        if (eventos[i].tipo == INICIO && eventos[i].angulo < EPSILON_ANGULAR) {
+            update_evento_arvore(seg_ativos, &eventos[i]);
         }
     }
 
+    // 5. SWEEP LINE (Disparo Duplo)
+    for (int i = 0; i < num_eventos; i++) {
+        evento *atual = &eventos[i];
+        bool ja_processado_no_inicio = (atual->tipo == INICIO && atual->angulo < EPSILON_ANGULAR);
+
+        // Disparo ANTES (Captura estado atual / parede de fundo)
+        capturar_ponto_visibilidade(visibilidade, seg_ativos, bomba, atual->angulo, raio_max);
+
+        // Atualização
+        if (!ja_processado_no_inicio) {
+            update_evento_arvore(seg_ativos, atual);
+        }
+
+        // Disparo DEPOIS (Captura novo estado / quina do obstáculo)
+        capturar_ponto_visibilidade(visibilidade, seg_ativos, bomba, atual -> angulo, raio_max);
+    }
+
+    // 6. LIMPEZA
     for(int i = 0; i < qtd_paredes; i++) {
         remove_tail(anteparos);
     }
@@ -356,10 +301,10 @@ poligono *calc_regiao_visibilidade(ponto *bomba, lista *anteparos, char tipo_ord
     free(eventos);
     free_arvore(seg_ativos);
 
+    // 7. CALCULA A BOUNDING BOX DO POLÍGONO PARA OTIMIZAÇÃO DO ALGORITMO DE CÁLCULO DE SOBREPOSIÇÃO
     if (get_num_vertices(visibilidade) > 0) {
         calcular_bounding_box(visibilidade);
     }
 
     return visibilidade;
-
 }
