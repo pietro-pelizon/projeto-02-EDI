@@ -107,11 +107,11 @@ static void comando_d(int threshold_i, char tipo_ord, char *buffer, lista *forma
 
     sscanf(buffer, "d %lf %lf %s", &x_impacto, &y_impacto, sfx);
 
-    double raio_max = 600.0;
+    double raio_max = 10000.0;
+
     ponto *bomba = init_ponto(x_impacto, y_impacto);
 
     printf("DEBUG: Tamanho da lista anteparos antes do calculo: %d\n", get_tam_lista(anteparos));
-
     poligono *vis = calc_regiao_visibilidade(bomba, anteparos, tipo_ord, raio_max, threshold_i);
 
     fprintf(arquivo_txt, "[*] d %.2lf %.2lf %s\n", x_impacto, y_impacto, sfx);
@@ -139,18 +139,19 @@ static void comando_d(int threshold_i, char tipo_ord, char *buffer, lista *forma
         FILE *svg_vis = inicializa_svg(path_svg);
         if (svg_vis) {
             insere_poligono_visibilidade(svg_vis, vis);
+            insere_bomba_svg(svg_vis, x_impacto, y_impacto);
             fecha_svg(svg_vis);
-
         }
     }
 
     else {
-            if (svg_final != NULL) {
-                insere_poligono_visibilidade(svg_final, vis);
-                insere_bomba_svg(svg_final, x_impacto, y_impacto);
-
-            }
+        if (svg_final != NULL) {
+            insere_poligono_visibilidade(svg_final, vis);
+            insere_bomba_svg(svg_final, x_impacto, y_impacto);
+        }
     }
+
+
 
     node *destruida = get_head_node(formas_destruidas);
     while (destruida != NULL) {
@@ -191,9 +192,9 @@ static void comando_p(lista *formas, lista *anteparos, FILE *arquivo_txt, char *
     double x_impacto, y_impacto; char sfx[64] = "-"; char cor[16] = "#FF0000";
 
     sscanf(buffer, "p %lf %lf %s %s", &x_impacto, &y_impacto, cor, sfx);
-    ponto *bomba = init_ponto(x_impacto, y_impacto);
 
-    double raio_max = 600.0;
+    ponto *bomba = init_ponto(x_impacto, y_impacto);
+    double raio_max = 10000.0;
     poligono *vis = calc_regiao_visibilidade(bomba, anteparos, tipo_ord, raio_max, threshold_i);
 
     node *head = get_head_node(formas);
@@ -211,6 +212,19 @@ static void comando_p(lista *formas, lista *anteparos, FILE *arquivo_txt, char *
         head = go_next_node(head);
     }
 
+    head = get_head_node(anteparos);
+    while (head != NULL) {
+        forma *f = get_node_data(head);
+
+        if (forma_sobrepoe_poligono(f, vis)) {
+            fprintf(arquivo_txt, "Anteparo pintado - ID -> %d\n", get_id_forma(f));
+
+            set_corb_formas(f, cor);
+        }
+
+        head = go_next_node(head);
+    }
+
     if (strcmp(sfx, "-") != 0) {
         char path_svg[512];
         sprintf(path_svg, "%s/%s-%s.svg", path_saida, path_base_svg, sfx);
@@ -218,13 +232,16 @@ static void comando_p(lista *formas, lista *anteparos, FILE *arquivo_txt, char *
         FILE *svg_vis = inicializa_svg(path_svg);
         if (svg_vis) {
             insere_poligono_visibilidade(svg_vis, vis);
+            insere_bomba_svg(svg_vis, x_impacto, y_impacto);
             fecha_svg(svg_vis);
         }
-        else {
-            if (svg_final != NULL) {
-                insere_poligono_visibilidade(svg_final, vis);
-                insere_bomba_svg(svg_final, x_impacto, y_impacto);
-            }
+    }
+
+    else {
+        if (svg_final != NULL) {
+            insere_poligono_visibilidade(svg_final, vis);
+            insere_bomba_svg(svg_final, x_impacto, y_impacto);
+
         }
     }
 
@@ -252,12 +269,15 @@ static void comando_cln(lista *formas, lista *anteparos, FILE *arquivo_txt,
     sscanf(buffer, "cln %lf %lf %lf %lf %s", &x_impacto, &y_impacto, &dx_translacao, &dy_translacao, sfx);
 
     ponto *bomba = init_ponto(x_impacto, y_impacto);
-    double raio_max = 600.0;
+    double raio_max = 10000.0;
+
     poligono *vis = calc_regiao_visibilidade(bomba, anteparos, tipo_ord, raio_max, threshold_i);
 
     node *head = get_head_node(formas);
     lista *clones = init_lista();
+
     fprintf(arquivo_txt, "[*] cln %.2lf %.2lf %.2lf %.2lf %s\n", x_impacto, y_impacto, dx_translacao, dy_translacao, sfx);
+
     while (head != NULL) {
         forma *f = get_node_data(head);
 
@@ -272,7 +292,6 @@ static void comando_cln(lista *formas, lista *anteparos, FILE *arquivo_txt,
 
             insert_tail(clones, clone);
         }
-
         head = go_next_node(head);
     }
 
@@ -281,7 +300,6 @@ static void comando_cln(lista *formas, lista *anteparos, FILE *arquivo_txt,
         forma *clone = get_node_data(clone_node);
         insert_tail(formas, clone);
         clone_node = go_next_node(clone_node);
-
     }
 
     if (strcmp(sfx, "-") != 0) {
@@ -291,20 +309,22 @@ static void comando_cln(lista *formas, lista *anteparos, FILE *arquivo_txt,
         FILE *svg_vis = inicializa_svg(path_svg);
         if (svg_vis) {
             insere_poligono_visibilidade(svg_vis, vis);
-            fecha_svg(svg_vis);
-        } else {
-            if (svg_final != NULL) {
-                insere_poligono_visibilidade(svg_final, vis);
-                insere_bomba_svg(svg_final, x_impacto, y_impacto);
+            insere_bomba_svg(svg_vis, x_impacto, y_impacto);
 
-            }
+            fecha_svg(svg_vis);
+        }
+    }
+    else {
+        if (svg_final != NULL) {
+            insere_poligono_visibilidade(svg_final, vis);
+            insere_bomba_svg(svg_final, x_impacto, y_impacto);
+
         }
     }
 
     free_lista(clones, NULL);
     free_ponto(bomba);
     free_poligono(vis);
-
 }
 
 void parser_qry(lista *formas, lista *anteparos, char *nome_path_qry, char *nome_path_txt,
