@@ -126,12 +126,17 @@ int main(int argc, char *argv[]) {
 
         if (svg_final) {
             desenhar_formas_no_svg(svg_final, formas);
-            fecha_svg(svg_final);
         }
 
-        printf("Gerando arquivo .svg final: %s\n", path_svg_final);
+        if (anteparos) {
+            desenhar_formas_no_svg(svg_final, anteparos);
+        }
 
+        fecha_svg(svg_final);
+
+        printf("Gerando arquivo .svg final: %s\n", path_svg_final);
         printf("Arquivo .txt de log gerado: %s\n", path_txt_final);
+
         free_lista(anteparos, (void(*)(void*))destrutor_forma);
     }
 
