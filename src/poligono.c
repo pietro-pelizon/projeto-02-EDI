@@ -87,6 +87,12 @@ int get_num_vertices(poligono *p) {
     return p -> num_vertices;
 }
 
+ponto *get_ultimo_vertice(poligono *p) {
+    if (p == NULL) return NULL;
+
+    return get_tail_data(p -> vertices);
+}
+
 
 ponto *get_vertice(poligono* p, int i) {
     if (i < 0 || i >= p -> num_vertices) return NULL;

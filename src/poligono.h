@@ -33,6 +33,11 @@ int get_num_vertices(poligono *p);
 /// @return Uma cópia do ponto no índice, ou NULL se o índice for inválido
 ponto *get_vertice(poligono* p, int i);
 
+/// @brief Retorna um último vértice presente no polígono
+/// @param p Ponteiro para o polígono
+/// @return Último vértice do polígono
+ponto *get_ultimo_vertice(poligono *p);
+
 /// @brief Verifica se o polígono está vazio (não possui vértices)
 /// @param p O polígono
 /// @return true se estiver vazio, false caso contrário
