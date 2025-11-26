@@ -12,7 +12,7 @@
 
 #define PI 3.14159265358
 #define EPSILON 1e-10
-#define EPSILON_ANGULAR 1e-7
+#define EPSILON_ANGULAR 1e-4
 
 typedef enum enum_tipo_evento {
     INICIO,
@@ -41,7 +41,7 @@ static int cmp_eventos(const void *a, const void *b) {
     if (fabs(e1 -> angulo - e2 -> angulo) < EPSILON_ANGULAR) {
         // Prioridade absoluta: INICIO antes de FIM
         if (e1 -> tipo != e2 -> tipo) {
-            return (e1->tipo == INICIO) ? -1 : 1;
+            return (e1 -> tipo == INICIO) ? -1 : 1;
         }
 
         // Desempate por distância
@@ -142,14 +142,19 @@ static void update_evento_arvore(arvore *seg_ativo, evento *e) {
     }
 }
 
+
+
 // Caso o ponto seja válido, o insere no polígono de visibilidade
-static void capturar_ponto_visibilidade(poligono *visibilidade, arvore *seg_ativos, ponto *bomba, double angulo, double raio_max) {
+static void capturar_ponto_visibilidade(poligono *vis, arvore *seg_ativos, ponto *bomba, double angulo, double raio_max) {
     ponto *p = raio_ate_anteparo_avl(seg_ativos, bomba, angulo, raio_max);
     if (p != NULL) {
         if (validar_ponto(p, bomba)) {
-            insert_ponto_poligono(visibilidade, p);
+            ponto *ultimo = get_ultimo_vertice(vis);
+            if (!ultimo || dist_pontos(p, bomba)) {
+                insert_ponto_poligono(vis, p);
+            }
         }
-        free_ponto(p);
+            free_ponto(p);
     }
 }
 
@@ -191,6 +196,7 @@ evento *preparar_segmentos(ponto *bomba, lista *anteparos, int *num_eventos) {
 
         // Jittering para segmentos finos
         // Impede que INICIO == FIM, garantindo processamento
+        // correto dos ângulos
         if (fabs(ang1 - ang2) < 1e-9) {
             ang2 += 1e-8;
         }
@@ -207,12 +213,12 @@ evento *preparar_segmentos(ponto *bomba, lista *anteparos, int *num_eventos) {
         double dist = calcular_distancia_ponto_segmento(bomba, a);
         int id = get_id_anteparo(a);
 
-        if (ang2 - ang1 > PI) {
-            vetor_eventos[k++] = (evento){id, ang2, dist, INICIO, a};
-            vetor_eventos[k++] = (evento){id, 2 * PI + 1e-9, dist, FIM, a};
+        if (ang1 > ang2) {
+            vetor_eventos[k++] = (evento){id, ang1, dist, INICIO, a};
+            vetor_eventos[k++] = (evento){id, PI, dist, FIM, a};
 
             vetor_eventos[k++] = (evento){id, 0.0, dist, INICIO, a};
-            vetor_eventos[k++] = (evento){id, ang1, dist, FIM, a};
+            vetor_eventos[k++] = (evento){id, ang2, dist, FIM, a};
         }
 
         else {
@@ -229,15 +235,15 @@ evento *preparar_segmentos(ponto *bomba, lista *anteparos, int *num_eventos) {
 poligono *calc_regiao_visibilidade(ponto *bomba, lista *anteparos, char tipo_ord, double raio_max, int threshold_i) {
     poligono *visibilidade = init_poligono();
 
-    // 1. PAREDES DO MUNDO
-    retangulo *box_mundo = criaRetangulo(-1, -10, -10, 1010, 1010, "none", "none");
+    retangulo *box_mundo = criaRetangulo(-1, 5, 5, 1010, 1010, "none", "none");
     forma *f_box = cria_forma(-1, RETANGULO, box_mundo);
     lista *paredes_mundo = forma_anteparo(f_box, 'h');
 
     int qtd_paredes = 0;
     node *aux = get_head_node(paredes_mundo);
     while(aux != NULL) {
-        insert_tail(anteparos, get_node_data(aux));
+        forma *f = get_node_data(aux);
+        insert_tail(anteparos, f);
         qtd_paredes++;
         aux = go_next_node(aux);
     }
@@ -272,13 +278,14 @@ poligono *calc_regiao_visibilidade(ponto *bomba, lista *anteparos, char tipo_ord
         }
     }
 
-    // 5. SWEEP LINE (Disparo Duplo)
+    // 5. SWEEP LINE
+    printf("Iniciando algoritmo de sweep line...\n");
     for (int i = 0; i < num_eventos; i++) {
         evento *atual = &eventos[i];
-        bool ja_processado_no_inicio = (atual->tipo == INICIO && atual->angulo < EPSILON_ANGULAR);
+        bool ja_processado_no_inicio = (atual->tipo == INICIO && atual -> angulo < EPSILON_ANGULAR);
 
         // Disparo ANTES (Captura estado atual / parede de fundo)
-        capturar_ponto_visibilidade(visibilidade, seg_ativos, bomba, atual->angulo, raio_max);
+        capturar_ponto_visibilidade(visibilidade, seg_ativos, bomba, atual -> angulo, raio_max);
 
         // Atualização
         if (!ja_processado_no_inicio) {
