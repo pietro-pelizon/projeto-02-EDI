@@ -101,6 +101,13 @@ tem o sufixo sfx ou no próprio arquivo svg
 final, caso sfx seja “-”.
 */
 
+static bool is_anteparo(void *dados) {
+    if (dados == NULL) return false;
+
+    forma *f = (forma*)dados;
+    return get_tipo_forma(f) == ANTEPARO;
+}
+
 static void comando_d(int threshold_i, char tipo_ord, char *buffer, lista *formas, lista *anteparos, FILE *arquivo_txt,
     const char *path_base_svg, const char *path_saida, FILE *svg_final) {
     double x_impacto, y_impacto;  char sfx[64] = "-";
@@ -108,17 +115,14 @@ static void comando_d(int threshold_i, char tipo_ord, char *buffer, lista *forma
     sscanf(buffer, "d %lf %lf %s", &x_impacto, &y_impacto, sfx);
 
     double raio_max = 10000.0;
-
     ponto *bomba = init_ponto(x_impacto, y_impacto);
-
-    printf("DEBUG: Tamanho da lista anteparos antes do calculo: %d\n", get_tam_lista(anteparos));
     poligono *vis = calc_regiao_visibilidade(bomba, anteparos, tipo_ord, raio_max, threshold_i);
 
     fprintf(arquivo_txt, "[*] d %.2lf %.2lf %s\n", x_impacto, y_impacto, sfx);
 
     lista *formas_destruidas = init_lista();
-
     node *head = get_head_node(formas);
+
     while (head != NULL) {
         forma *f = get_node_data(head);
 
@@ -131,6 +135,25 @@ static void comando_d(int threshold_i, char tipo_ord, char *buffer, lista *forma
         }
         head = go_next_node(head);
     }
+    lista *anteparos_destruidos = init_lista();
+    head = get_head_node(anteparos);
+    while (head != NULL) {
+        forma *f = get_node_data(head);
+
+        if (get_id_forma(f) >= 0 && forma_sobrepoe_poligono(f, vis)) {
+            insert_tail(anteparos_destruidos, f);
+            fprintf(arquivo_txt, "Anteparo destruído - ID: %d\n", get_id_forma(f));
+        }
+        head = go_next_node(head);
+    }
+
+    node *rem = get_head_node(anteparos_destruidos);
+    while (rem != NULL) {
+        remove_all_if(anteparos, (int(*)(void*))is_anteparo, (void(*)(void*))destrutor_forma);
+        rem = go_next_node(rem);
+    }
+    free_lista(anteparos_destruidos, NULL);
+
 
     if (strcmp(sfx, "-") != 0) {
         char path_svg[512];
@@ -150,7 +173,6 @@ static void comando_d(int threshold_i, char tipo_ord, char *buffer, lista *forma
             insere_bomba_svg(svg_final, x_impacto, y_impacto);
         }
     }
-
 
 
     node *destruida = get_head_node(formas_destruidas);
@@ -217,7 +239,7 @@ static void comando_p(lista *formas, lista *anteparos, FILE *arquivo_txt, char *
         forma *f = get_node_data(head);
 
         if (forma_sobrepoe_poligono(f, vis)) {
-            fprintf(arquivo_txt, "Anteparo pintado - ID -> %d\n", get_id_forma(f));
+            fprintf(arquivo_txt, "Forma pintada - ID -> %d | Tipo -> ANTEPARO\n", get_id_forma(f));
 
             set_corb_formas(f, cor);
         }
@@ -332,13 +354,13 @@ void parser_qry(lista *formas, lista *anteparos, char *nome_path_qry, char *nome
 
     FILE *arquivo_qry = fopen(nome_path_qry, "r");
     if (arquivo_qry == NULL) {
-        printf("DEBUG: Erro ao abrir o arquivo .qry!\n");
+        printf("ERRO: Erro ao abrir o arquivo .qry!\n");
         return;
     }
 
     FILE *arquivo_txt = fopen(nome_path_txt, "w");
     if (arquivo_txt == NULL) {
-        printf("DEBUG: Erro ao abrir o arquivo .txt!\n");
+        printf("ERRO: Erro ao abrir o arquivo .txt!\n");
         return;
     }
 
