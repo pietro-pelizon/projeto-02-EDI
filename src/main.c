@@ -79,7 +79,7 @@ int main(int argc, char *argv[]) {
     char path_svg_inicial[PATH_SIZE];
     sprintf(path_svg_inicial, "%s/%s.svg", path_saida, nome_base_geo);
 
-    printf("Lendo arquivo .geo: %s\n", path_geo_completo);
+    printf("Lendo arquivo (.geo): %s\n", path_geo_completo);
 
     lista *formas = parser_geo(path_geo_completo);
 
@@ -88,10 +88,8 @@ int main(int argc, char *argv[]) {
         return 1;
     }
 
-    printf("Formas carregadas: %d\n", get_tam_lista(formas));
-
     // --- 4. Criando o arquivo .svg com todas as formas iniciais ---
-    printf("Gerando arquivo .svg inicial: %s\n", path_svg_inicial);
+    printf("Gerando arquivo (.svg) inicial: %s\n", path_svg_inicial);
     FILE *arq_svg_inicial = gerar_arquivo_svg(path_svg_inicial, formas);
     fecha_svg(arq_svg_inicial);
 
@@ -118,7 +116,7 @@ int main(int argc, char *argv[]) {
             printf("Tipo de ordenação: Merge Sort\n");
         }
 
-        printf("Threshold insertion sort: %d\n", threshold_i);
+        printf("Threshold insertion sort: %d\n\n", threshold_i);
 
         FILE *svg_final = inicializa_svg(path_svg_final);
         lista *anteparos = init_lista();
@@ -134,8 +132,8 @@ int main(int argc, char *argv[]) {
 
         fecha_svg(svg_final);
 
-        printf("Gerando arquivo .svg final: %s\n", path_svg_final);
-        printf("Arquivo .txt de log gerado: %s\n", path_txt_final);
+        printf("Gerando arquivo (.svg) final: %s\n", path_svg_final);
+        printf("Arquivo (.txt) de log gerado: %s\n", path_txt_final);
 
         free_lista(anteparos, (void(*)(void*))destrutor_forma);
     }

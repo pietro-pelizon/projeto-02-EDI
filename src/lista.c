@@ -20,7 +20,7 @@ typedef struct stLista {
 lista *init_lista() {
     lista *l = malloc (sizeof(lista));
     if (l == NULL) {
-        printf("Erro ao alocar memoria para a lista!\n");
+        printf("LISTA: Erro ao alocar memoria para a lista!\n");
         return NULL;
     }
 
@@ -46,7 +46,7 @@ bool is_empty_lista(lista *l) {
 void insert_head(lista *l, void *new_data) {
     node *new = malloc (sizeof(node));
     if (new == NULL) {
-        printf("Erro ao alocar memoria para o novo node da lista!\n");
+        printf("LISTA: Erro ao alocar memoria para o novo node da lista!\n");
         return;
     }
 
@@ -68,7 +68,7 @@ void insert_head(lista *l, void *new_data) {
 void insert_tail(lista *l, void *new_data) {
     node *new = malloc (sizeof(node));
     if (new == NULL) {
-        printf("DEBUG: Erro ao alocar memoria para o novo node\n");
+        printf("LISTA: Erro ao alocar memoria para o novo node\n");
         return;
     }
 
@@ -108,7 +108,7 @@ void index_insert(lista *l, void *new_data, int index) {
 
     node *new = malloc (sizeof(node));
     if (new == NULL) {
-        printf("DEBUG: Erro ao alocar memoria o novo no da lista!\n");
+        printf("LISTA: Erro ao alocar memoria o novo no da lista!\n");
         return;
     }
     new -> data = new_data;
@@ -135,7 +135,7 @@ void *remove_head(lista *l) {
     }
 
     if (l -> head == NULL) {
-        printf("DEBUG: Nada a remover, a lista ja esta vazia!\n");
+        printf("LISTA: Nada a remover, a lista ja esta vazia!\n");
         return NULL;
     }
 
@@ -166,7 +166,7 @@ void *remove_tail(lista *l) {
     }
 
     if (is_empty_lista(l)) {
-        printf("DEBUG: Nada a remover, a lista ja esta vazia!\n");
+        printf("LISTA: Nada a remover, a lista ja esta vazia!\n");
         return NULL;
     }
 
@@ -245,7 +245,6 @@ void free_lista(lista *l, void (*free_data)(void *data)) {
 
 void *get_head_data(lista *l) {
     if (is_empty_lista(l)) {
-        printf("lista vazia!\n");
         return NULL;
     }
 
@@ -262,7 +261,6 @@ void *get_node_data(node *n) {
 
 node *get_head_node(lista *l) {
     if (is_empty_lista(l)) {
-        printf("lista vazia!\n");
         return NULL;
     }
 
@@ -271,7 +269,6 @@ node *get_head_node(lista *l) {
 
 void *get_tail_data(lista *l) {
     if (is_empty_lista(l)) {
-        printf("lista vazia!\n");
         return NULL;
     }
 
@@ -280,7 +277,6 @@ void *get_tail_data(lista *l) {
 
 node *get_tail_node(lista *l) {
     if (is_empty_lista(l)) {
-        printf("lista vazia!\n");
         return NULL;
     }
 
@@ -289,12 +285,11 @@ node *get_tail_node(lista *l) {
 
 node *get_node_index(lista *l, int index) {
     if (is_empty_lista(l)) {
-        printf("lista vazia!\n");
         return NULL;
     }
 
     if (index < 0 || index > l -> tam - 1) {
-        printf("Index inválido!\n");
+        printf("LISTA: Index inválido!\n");
         return NULL;
     }
 
@@ -316,7 +311,6 @@ node *get_node_index(lista *l, int index) {
 
 void *get_data_index(lista *l, int index) {
     if (is_empty_lista(l)) {
-        printf("lista vazia!\n");
         return NULL;
     }
 
@@ -381,7 +375,7 @@ void *remove_first_data(lista *l, void *key, int (*compare)(void *a, void *b)) {
     }
 
     if (l -> tam == 0) {
-        printf("A lista está vazia! Nada a remover!\n");
+        printf("LISTA: A lista está vazia! Nada a remover!\n");
         return NULL;
     }
 
@@ -396,7 +390,7 @@ void *remove_first_data(lista *l, void *key, int (*compare)(void *a, void *b)) {
         index++;
     }
 
-    printf("DEBUG: Elemento não encontrado na lista\n");
+    printf("LISTA: Elemento não encontrado na lista\n");
     return NULL;
 }
 
@@ -435,7 +429,7 @@ void *search_lista(lista *l, void *key, int (*compare)(void *a, void *b)) {
 
 void print_lista(lista *l, void (*print_data)(void *data)) {
     if (l == NULL) {
-        printf("Ponteiro nulo passado para a funcao 'print_lista'\n");
+        printf("LISTA: Ponteiro nulo passado para a funcao 'print_lista'\n");
         return;
     }
 

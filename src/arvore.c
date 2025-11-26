@@ -23,7 +23,7 @@ typedef struct stArvore {
 arvore *init_arvore(int (*cmp_data)(const void *a, const void *b), void (*free_data)(void *data), void (*print_data)(void *data)) {
     arvore *a = malloc (sizeof(arvore));
     if (a == NULL) {
-        printf("DEBUG: Erro ao criar a estrutura árvore!\n");
+        printf("ÁRVORE: Erro ao criar a estrutura árvore!\n");
         return NULL;
     }
 
@@ -129,7 +129,7 @@ static node_AVL *rotate_left_right(node_AVL *r) {
 static node_AVL *create_node(void *data) {
     node_AVL *node = malloc (sizeof(node_AVL));
     if (node == NULL) {
-        printf("DEBUG: Erro ao criar nó para a árvore!\n");
+        printf("ÁRVORE: Erro ao criar nó para a árvore!\n");
         return NULL;
     }
 
@@ -187,7 +187,6 @@ static node_AVL *insert_bst(arvore *t, node_AVL *node, void *data) {
     }
 
     else {
-        printf("DEBUG: Dado duplicado, não inserido.\n");
         if (t -> free_data != NULL) {
             t -> free_data(data);
         }
@@ -227,7 +226,6 @@ void *binary_search(arvore *t, void *key) {
         }
     }
 
-    printf("DEBUG: Dado não encontrado na árvore!\n");
     return NULL;
 }
 
@@ -298,9 +296,6 @@ void *remove_node(arvore *t, void *key) {
 
     t -> root = remove_node_recursivo(t, t -> root, key, &removed_data);
 
-    if (removed_data == NULL) {
-        printf("DEBUG: Dado não encontrado na árvore!\n");
-    }
 
     return removed_data;
 }

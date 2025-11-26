@@ -11,7 +11,7 @@ typedef struct stPonto {
 ponto *init_ponto(double x, double y) {
     ponto *p = malloc (sizeof(ponto));
     if (p == NULL) {
-        printf("DEBUG: Erro ao alocar memória para o ponto!\n");
+        printf("PONTO: Erro ao alocar memória para o ponto!\n");
         return NULL;
     }
 
