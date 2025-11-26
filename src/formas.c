@@ -74,8 +74,8 @@ char *get_corp_forma(forma *f) {
 	switch (tipo) {
 		case CIRCULO: return getCorpCirculo(dados);
 		case RETANGULO: return getCorpRetangulo(dados);
-		case LINHA: printf("Linha não tem cor de preenchimento!\n"); break;
-		case ANTEPARO: printf("Anteparo não tem cor de preenchimento!\n"); break;
+		case LINHA: break;
+		case ANTEPARO: break;
 		case TEXTO: return getCorpTexto(dados);
 		default: return NULL;
 
@@ -93,8 +93,8 @@ void set_corp_formas(forma *f, char *nova_cor) {
 	switch (tipo) {
 		case CIRCULO: setCorpCirculo(dados, nova_cor); break;
 		case RETANGULO: setCorpRetangulo(dados, nova_cor); break;
-		case LINHA: printf("Linha não tem cor de preenchimento, nada a alterar!\n"); break;
-		case ANTEPARO: printf("Anteparo não tem cor de preenchimento, nada a alterar!\n"); break;
+		case LINHA: break;
+		case ANTEPARO: break;
 		case TEXTO: setCorpTexto(dados, nova_cor); break;
 		default: break;
 	}
@@ -396,17 +396,17 @@ lista *forma_anteparo(forma *f, char orientacao) {
 
 	switch (tipo) {
 		case CIRCULO: {
-			anteparo *anteparo_circulo = circulo_anteparo(dados, orientacao);
-			forma *criada = cria_forma(++novo_id,  ANTEPARO, anteparo_circulo);
+			anteparo *anteparo_circulo = circulo_anteparo(dados, orientacao, &novo_id);
+			forma *criada = cria_forma(get_id_anteparo(anteparo_circulo),  ANTEPARO, anteparo_circulo);
 			insert_tail(anteparos, criada);
 			break;
 		}
 
 		case RETANGULO: {
-			lista *anteparos_ret = retangulo_anteparo(dados);
+			lista *anteparos_ret = retangulo_anteparo(dados, &novo_id);
 			while (get_tam_lista(anteparos_ret) != 0) {
 				anteparo *retirado = remove_head(anteparos_ret);
-				forma *criada = cria_forma(++novo_id, ANTEPARO, retirado);
+				forma *criada = cria_forma(get_id_anteparo(retirado), ANTEPARO, retirado);
 				insert_tail(anteparos, criada);
 			}
 			free_lista(anteparos_ret, NULL);
@@ -414,15 +414,15 @@ lista *forma_anteparo(forma *f, char orientacao) {
 		}
 
 		case LINHA: {
-			anteparo *copia = linha_anteparo(dados);
-			forma *criada = cria_forma(++novo_id, ANTEPARO, copia);
+			anteparo *copia = linha_anteparo(dados, &novo_id);
+			forma *criada = cria_forma(get_id_anteparo(copia), ANTEPARO, copia);
 			insert_tail(anteparos, criada);
 			break;
 		}
 
 		case TEXTO: {
-			anteparo *texto = converter_texto_para_anteparo(dados);
-			forma *criada = cria_forma(++novo_id, ANTEPARO, texto);
+			anteparo *texto = converter_texto_para_anteparo(dados, &novo_id);
+			forma *criada = cria_forma(get_id_anteparo(texto), ANTEPARO, texto);
 			insert_tail(anteparos, criada);
 			break;
 		}

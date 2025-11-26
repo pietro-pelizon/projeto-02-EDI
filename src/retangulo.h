@@ -116,7 +116,8 @@ void destrutorRetangulo(retangulo *r);
 
 /// @brief Transforma o retângulo nas linhas de sua borda
 /// @param r Ponteiro para o retângulo
+/// @param proximo_id ID dos anteparos criados
 /// @return Uma lista com os anteparos inseridos
-lista *retangulo_anteparo(retangulo *r);
+lista *retangulo_anteparo(retangulo *r, int *proximo_id);
 
 #endif //RETANGULO_H

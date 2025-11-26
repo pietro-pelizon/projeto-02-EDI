@@ -105,7 +105,8 @@ void destrutorCirculo(circulo *c);
 /// @brief Transforma um círculo em um anteparo
 /// @param c Ponteiro para o círculo
 /// @param orientacao Determina se o anteparo será vertical ou horizontal
+/// @param proximo_id ID do anteparo criado
 /// @return Retorna o anteparo criado
-anteparo *circulo_anteparo(circulo *c, char orientacao);
+anteparo *circulo_anteparo(circulo *c, char orientacao, int *proximo_id);
 
 #endif //CIRCULO_H

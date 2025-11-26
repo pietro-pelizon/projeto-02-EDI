@@ -123,7 +123,8 @@ void destrutorLinha(linha *l);
 
 /// @brief Faz uma cópia da linha
 /// @param l Linha que será transformada em anteparo
-/// @return Retorna um ponteiro para o para o anteparo criado
-anteparo *linha_anteparo(linha *l);
+/// @param proximo_id ID do anteparo criado
+/// @return Retorna um ponteiro para o anteparo criado
+anteparo *linha_anteparo(linha *l, int *proximo_id);
 
 #endif //LINHA_H

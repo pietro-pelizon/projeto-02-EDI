@@ -309,7 +309,7 @@ void destrutorTexto(texto *t) {
 	free(t);
 }
 
-anteparo *converter_texto_para_anteparo(texto *t) {
+anteparo *converter_texto_para_anteparo(texto *t, int *proximo_id) {
     double xt_ancora = getXTexto(t);
     double yt_ancora = getYTexto(t);
     char ancora_texto = getATexto(t);
@@ -317,9 +317,6 @@ anteparo *converter_texto_para_anteparo(texto *t) {
 
     double comprimento = 10.0 * num_chars;
     double tx1, ty1, tx2, ty2;
-
-	static int id_anteparo = 4000;
-	int novo_id = ++id_anteparo;
 
 
     ty1 = yt_ancora;
@@ -347,7 +344,7 @@ anteparo *converter_texto_para_anteparo(texto *t) {
             break;
     }
 
-	anteparo *a_out = init_anteparo(novo_id, tx1, ty1, tx2, ty2, getCorbTexto(t));
+	anteparo *a_out = init_anteparo(++(*proximo_id), tx1, ty1, tx2, ty2, getCorbTexto(t));
 
 	return a_out;
 }

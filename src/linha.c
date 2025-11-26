@@ -145,16 +145,14 @@ void destrutorLinha(linha *l) {
 
 }
 
-anteparo *linha_anteparo(linha *l) {
+anteparo *linha_anteparo(linha *l, int *proximo_id) {
     if (l == NULL) return NULL;
 
-	static int id_anteparo = 2000;
-	int novo_id = ++id_anteparo;
 	double x1 = getX1Linha(l);
 	double y1 = getY2Linha(l);
 	double x2 = getX2Linha(l);
 	double y2 = getX2Linha(l);
 
-	return init_anteparo(novo_id, x1, y1, x2, y2, getCorLinha(l));
+	return init_anteparo(++(*proximo_id), x1, y1, x2, y2, getCorLinha(l));
 }
 

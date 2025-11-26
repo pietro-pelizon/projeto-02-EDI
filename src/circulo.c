@@ -132,15 +132,12 @@ void destrutorCirculo(circulo *c) {
 	free(c);
 }
 
-anteparo *circulo_anteparo(circulo *c, char orientacao) {
+anteparo *circulo_anteparo(circulo *c, char orientacao, int *proximo_id) {
 	if (c == NULL) return NULL;
-
-	static int id_anteparo = 1000;
-	int novo_id = ++id_anteparo;
 
 	switch (orientacao) {
 		case 'h': {
-			return init_anteparo(novo_id, c -> x - c -> r,
+			return init_anteparo(++(*proximo_id), c -> x - c -> r,
 				c -> y,
 				c -> x + c -> r,
 				c -> y,
@@ -148,7 +145,7 @@ anteparo *circulo_anteparo(circulo *c, char orientacao) {
 		}
 
 		case 'v': {
-			return init_anteparo(novo_id, c -> x,
+			return init_anteparo(++(*proximo_id), c -> x,
 				c -> y - c -> r,
 				c -> x,
 				c -> y + c -> r, getCorbCirculo(c));

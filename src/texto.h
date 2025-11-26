@@ -191,8 +191,9 @@ void destroiEstilo(estilo *e);
 
 /// @brief Transforma um texto em um anteparo
 /// @param t Ponteiro para o texto
+/// @param proximo_id ID do anteparo criado
 /// @return Retorna um anteparo já criada
-anteparo *converter_texto_para_anteparo(texto *t);
+anteparo *converter_texto_para_anteparo(texto *t, int *proximo_id);
 
 /// @brief Converte um texto para uma linha conforme convenção do trabalho
 /// @param t Ponteiro para o texto
