@@ -17,7 +17,7 @@ typedef struct stAnteparo {
 anteparo *init_anteparo(int id, double x0, double y0, double x1, double y1, char *cor) {
     anteparo *a = malloc (sizeof(anteparo));
     if (!a) {
-        printf("DEBUG: Erro ao alocar memória para o anteparo!\n");
+        printf("ANTEPARO: Erro ao alocar memória para o anteparo!\n");
         return NULL;
     }
 
@@ -28,7 +28,7 @@ anteparo *init_anteparo(int id, double x0, double y0, double x1, double y1, char
 
     a -> cor = malloc (strlen(cor) + 1);
     if (a -> cor == NULL) {
-        printf("DEBUG: Erro ao alocar memória para a cor do anteparo!\n");
+        printf("ANTEPARO: Erro ao alocar memória para a cor do anteparo!\n");
         a -> cor = NULL;
         return a;
     }
@@ -39,6 +39,10 @@ anteparo *init_anteparo(int id, double x0, double y0, double x1, double y1, char
 
 int get_id_anteparo(anteparo *a) {
     return a -> id;
+}
+
+void set_id_anteparo(anteparo *a, int novo_id) {
+    a -> id = novo_id;
 }
 
 ponto *get_p0_anteparo(anteparo *a) {
@@ -76,7 +80,7 @@ void set_cor_anteparo(anteparo *a, char *new_cor) {
 
     a -> cor = (char*)malloc(strlen(new_cor) + 1);
     if (a -> cor == NULL) {
-        printf("DEBUG: Erro ao alocar memória para a nova cor de anteparo!\n");
+        printf("ANTEPARO: Erro ao alocar memória para a nova cor de anteparo!\n");
         return;
     }
 

@@ -29,6 +29,11 @@ anteparo *init_anteparo(int id, double x0, double y0, double x1, double y1, char
 /// @return Identificador do anteparo
 int get_id_anteparo(anteparo *a);
 
+/// @brief Define um novo ID para o anteparo
+/// @param a Ponteiro para o anteparo
+/// @param novo_id Novo ID
+void set_id_anteparo(anteparo *a, int novo_id);
+
 /// @brief Pega o ponto da extremidade inicial do anteparo
 /// @param a Ponteiro para o anteparo
 /// @return Retorna o ponto p0 do anteparo
