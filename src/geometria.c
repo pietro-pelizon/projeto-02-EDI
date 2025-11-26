@@ -100,3 +100,10 @@ double calc_dist_anteparo_bomba(anteparo *a, ponto *p_bomba, double angulo, doub
     }
     return DBL_MAX;
 }
+
+double dist_pontos(ponto *a, ponto *b) {
+    double x1 = get_x_ponto(a); double x2 = get_x_ponto(b);
+    double y1 = get_y_ponto(a); double y2 = get_y_ponto(b);
+
+    return distancia_quadrada(x1, y1, x2, y2);
+}

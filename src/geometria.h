@@ -69,4 +69,10 @@ double calcular_distancia_ponto_segmento(ponto *p, anteparo *a);
 /// @return Distância até a interseção, ou DBL_MAX se não bater
 double calc_dist_anteparo_bomba(anteparo *a, ponto *p_bomba, double angulo, double raio_max);
 
+/// @brief Calcula a distância entre duas variáveis do tipo ponto
+/// @param a Ponto 1
+/// @param b Ponto 2
+/// @return Distância Euclidiana entre os dois pontos
+double dist_pontos(ponto *a, ponto *b);
+
 #endif //PROJETO_02_EDI_GEOMETRIA_H
