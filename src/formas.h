@@ -107,20 +107,6 @@ void destrutor_forma(forma *f);
 /// @param y: Nova coordenada Y.
 void set_posicao_forma(forma *f, double x, double y);
 
-/// @brief: Faz o cálculo para obter a cor complementar de uma cor em hexadecimal.
-/// @param cor_hexa_original: A cor que terá sua cor complementar calculada.
-/// @return: Retorna um ponteiro para a cor complementar em hexadecimal.
-char *getCorComplementar(char *cor_hexa_original);
-
-/// @brief: Troca a cor de preenchimento de f1 com a cor de borda de f2.
-/// @param f1: Ponteiro para a forma 1.
-/// @param f2: Ponteiro para a forma 2;
-void alterna_cores_entre_formas(forma *f1, forma *f2);
-
-/// @brief: Troca a cor de preenchimento da forma com sua cor de borda e vice-versa.
-/// @param f: Ponteiro para a forma.
-void alterna_cores_forma(forma *f);
-
 /// @brief: Dado o tipo da forma, pega seus dados e a desenha em um arquivo svg.
 /// @param f: Ponteiro para a forma.
 /// @param svg: Ponteiro para o arquivo svg.

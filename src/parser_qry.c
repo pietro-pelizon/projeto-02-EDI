@@ -163,6 +163,7 @@ static void comando_d(int threshold_i, char tipo_ord, char *buffer, lista *forma
         if (svg_vis) {
             insere_poligono_visibilidade(svg_vis, vis);
             insere_bomba_svg(svg_vis, x_impacto, y_impacto);
+            insere_bounding_box(svg_vis, vis);
             fecha_svg(svg_vis);
         }
     }
@@ -171,6 +172,7 @@ static void comando_d(int threshold_i, char tipo_ord, char *buffer, lista *forma
         if (svg_final != NULL) {
             insere_poligono_visibilidade(svg_final, vis);
             insere_bomba_svg(svg_final, x_impacto, y_impacto);
+            insere_bounding_box(svg_final, vis);
         }
     }
 
@@ -255,6 +257,7 @@ static void comando_p(lista *formas, lista *anteparos, FILE *arquivo_txt, char *
         if (svg_vis) {
             insere_poligono_visibilidade(svg_vis, vis);
             insere_bomba_svg(svg_vis, x_impacto, y_impacto);
+            insere_bounding_box(svg_vis, vis);
             fecha_svg(svg_vis);
         }
     }
@@ -263,6 +266,7 @@ static void comando_p(lista *formas, lista *anteparos, FILE *arquivo_txt, char *
         if (svg_final != NULL) {
             insere_poligono_visibilidade(svg_final, vis);
             insere_bomba_svg(svg_final, x_impacto, y_impacto);
+            insere_bounding_box(svg_final, vis);
 
         }
     }
@@ -332,6 +336,7 @@ static void comando_cln(lista *formas, lista *anteparos, FILE *arquivo_txt,
         if (svg_vis) {
             insere_poligono_visibilidade(svg_vis, vis);
             insere_bomba_svg(svg_vis, x_impacto, y_impacto);
+            insere_bounding_box(svg_vis, vis);
 
             fecha_svg(svg_vis);
         }
@@ -340,6 +345,7 @@ static void comando_cln(lista *formas, lista *anteparos, FILE *arquivo_txt,
         if (svg_final != NULL) {
             insere_poligono_visibilidade(svg_final, vis);
             insere_bomba_svg(svg_final, x_impacto, y_impacto);
+            insere_bounding_box(svg_final, vis);
 
         }
     }

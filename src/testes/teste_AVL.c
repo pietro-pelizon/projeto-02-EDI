@@ -57,7 +57,7 @@ void test_init() {
         return;
     }
 
-    if (is_empty_bst(t)) {
+    if (is_empty_avl(t)) {
         printf("arvore criada vazia\n");
     }
 

@@ -135,7 +135,7 @@ void insere_bounding_box(FILE *svg, poligono *p) {
 	double altura = yMax - yMin;
 
 	fprintf(svg, "\t<rect x=\"%lf\" y=\"%lf\" width=\"%lf\" height=\"%lf\" "
-				 "fill=\"none\" stroke=\"red\" stroke-dasharray=\"5,5\" stroke-width=\"1.5\" />\n", xMin, yMin, largura, altura);
+				 "fill=\"none\" stroke=\"black\" stroke-dasharray=\"3, 3\" stroke-width=\"2.0\" />\n", xMin, yMin, largura, altura);
 }
 
 void fecha_svg(FILE *svg) {
@@ -147,7 +147,6 @@ void fecha_svg(FILE *svg) {
 
 	fclose(svg);
 }
-
 
 void insere_bomba_svg(FILE *svg, double x, double y) {
 	if (svg == NULL) return;

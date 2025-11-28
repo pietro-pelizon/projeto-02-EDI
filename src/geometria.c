@@ -39,7 +39,6 @@ bool is_ponto_no_segmento(double px, double py, double qx, double qy, double rx,
     return (qx <= fmax(px, rx) && qx >= fmin(px, rx) && qy <= fmax(py, ry) && qy >= fmin(py, ry));
 }
 
-
 double calcular_distancia_ponto_segmento(ponto *p, anteparo *a) {
     double px = get_x_ponto(p);
     double py = get_y_ponto(p);

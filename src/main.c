@@ -29,7 +29,6 @@ static void extrair_nome_base(const char *caminho, char *nome_base) {
     }
 }
 
-
 int main(int argc, char *argv[]) {
 
     char *path_entrada = NULL;

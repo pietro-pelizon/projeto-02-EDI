@@ -119,7 +119,7 @@ void set_corb_formas(forma *f, char *nova_cor) {
 forma *clona_forma(forma *f_original) {
 	if (f_original == NULL) return NULL;
 
-	static int max_id = 10000;
+	static int max_id = 20000;
 	int novo_id = ++max_id;
 
 	tipo_forma tipo = get_tipo_forma(f_original);
@@ -195,56 +195,6 @@ forma *clona_forma(forma *f_original) {
 		return cria_forma(novo_id, tipo, novos_dados);
 	}
 	return NULL;
-}
-
-void alterna_cores_forma(forma *f) {
-	if (f == NULL) return;
-
-
-	char *cor_borda = get_corb_forma(f);
-	char *cor_preenchimento = get_corp_forma(f);
-
-	if (cor_borda == NULL || cor_preenchimento == NULL) return;
-
-	char *copia_preenchimento = malloc(strlen(cor_preenchimento) + 1);
-	if (copia_preenchimento == NULL) {
-		fprintf(stderr, "Erro de memoria na funcao alternaCores!\n");
-		return;
-	}
-	strcpy(copia_preenchimento, cor_preenchimento);
-
-	set_corp_formas(f, cor_borda);
-	set_corb_formas(f, copia_preenchimento);
-
-	free(copia_preenchimento);
-}
-
-void alterna_cores_entre_formas(forma *f1, forma *f2) {
-	if (f1 == NULL || f2 == NULL) return;
-
-	if (f1 == f2) {
-		alterna_cores_forma(f1);
-		return;
-	}
-
-	char *cor_preenchimento_f1 = get_corp_forma(f1);
-	char *cor_borda_f2 = get_corb_forma(f2);
-
-	if (cor_preenchimento_f1 == NULL || cor_borda_f2 == NULL) {
-		return;
-	}
-
-	char *copia_preenchimento_f1 = malloc(strlen(cor_preenchimento_f1) + 1);
-	if (copia_preenchimento_f1 == NULL) {
-		fprintf(stderr, "Erro de memoria na funcao trocaCores!\n");
-		return;
-	}
-	strcpy(copia_preenchimento_f1, cor_preenchimento_f1);
-
-	set_corp_formas(f1, cor_borda_f2);
-	set_corb_formas(f2, copia_preenchimento_f1);
-
-	free(copia_preenchimento_f1);
 }
 
 double get_area_forma(forma *f) {

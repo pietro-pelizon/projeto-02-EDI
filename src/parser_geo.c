@@ -153,8 +153,7 @@ static void processar_estilo_texto(const char* linha, estilo_texto* estilo_atual
     }
 }
 
-static void processar_comando(const char* linha_buffer, const char* comando,
-                             lista *lista_formas, estilo_texto* estilo_atual) {
+static void processar_comando(const char* linha_buffer, const char* comando, lista *lista_formas, estilo_texto* estilo_atual) {
     if (strcmp(comando, "c") == 0) {
         processar_circulo(linha_buffer, lista_formas);
     }

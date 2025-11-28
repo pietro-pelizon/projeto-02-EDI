@@ -180,7 +180,7 @@ void get_bounding_box(poligono *p, double *xMin, double *xMax, double *yMin, dou
         return;
     }
 
-    if (p->num_vertices == 0) {
+    if (p -> num_vertices == 0) {
         *xMin = *xMax = *yMin = *yMax = 0.0;
         return;
     }
