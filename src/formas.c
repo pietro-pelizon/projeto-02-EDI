@@ -254,8 +254,29 @@ void set_posicao_forma(forma *f, double x, double y) {
 			break;
 		}
 
-		case LINHA:
 		case ANTEPARO: {
+			anteparo *a = (anteparo*) f->dados;
+
+			double x0_antigo = get_x_p0(a);
+			double y0_antigo = get_y_p0(a);
+			double x1_antigo = get_x_p1(a);
+			double y1_antigo = get_y_p1(a);
+
+			double dX = x - x0_antigo;
+			double dY = y - y0_antigo;
+
+			ponto *p0 = get_p0_anteparo(a);
+			set_x_ponto(p0, x);
+			set_y_ponto(p0, y);
+
+			ponto *p1 = get_p1_anteparo(a);
+			set_x_ponto(p1, x1_antigo + dX);
+			set_y_ponto(p1, y1_antigo + dY);
+			break;
+		}
+
+
+		case LINHA: {
 			linha *l = (linha*) f -> dados;
 
 			double x1Antigo = getX1Linha(l);
