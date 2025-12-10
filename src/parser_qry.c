@@ -11,391 +11,256 @@
 #define BUFFER_SIZE 512
 #define COMANDO_SIZE 16
 
-/*
-As formas cujos identificadores estão na
-faixa [i, j] são pintadas com a tinta
-bloqueante (viram anteparos)
-Círculos são transformados em segmentos
-horizontais (h) ou verticais (h).
-Segmentos devem ter identificadores únicos.
-Cor do segmento é o mesmo da cor da
-borda da figura original.
-TXT: reportar id e tipo da figura original,
-id e extremos dos segmentos produzidos
-*/
+
+static void remover_formas_da_lista(lista *lista_principal, lista *formas_para_remover) {
+    node *rem = get_head_node(formas_para_remover);
+    while (rem != NULL) {
+        forma *f_alvo = get_node_data(rem);
+
+        node *busca = get_head_node(lista_principal);
+        int idx = 0;
+        while (busca != NULL) {
+            if (get_node_data(busca) == f_alvo) {
+                remove_index(lista_principal, idx);
+                destrutor_forma(f_alvo);
+                break;
+            }
+            busca = go_next_node(busca);
+            idx++;
+        }
+        rem = go_next_node(rem);
+    }
+}
+
+static void gerar_saida_visual(const char *sfx, const char *path_saida, const char *path_base_svg,
+                               double x, double y, poligono *vis, FILE *svg_final) {
+    if (strcmp(sfx, "-") != 0) {
+        char path_svg[512];
+        sprintf(path_svg, "%s/%s-%s.svg", path_saida, path_base_svg, sfx);
+        FILE *svg_vis = inicializa_svg(path_svg);
+        if (svg_vis) {
+            insere_poligono_visibilidade(svg_vis, vis);
+            insere_bomba_svg(svg_vis, x, y);
+            fecha_svg(svg_vis);
+        }
+    } else if (svg_final != NULL) {
+        insere_poligono_visibilidade(svg_final, vis);
+        insere_bomba_svg(svg_final, x, y);
+    }
+}
+
+/* --- Comando A (Transformar em Anteparos) --- */
 
 static void comando_a(char *buffer, lista *formas, lista *anteparos, FILE *arquivo_txt) {
     int id_i, id_j; char orientacao = 'h';
-
     sscanf(buffer, "a %i %i %c", &id_i, &id_j, &orientacao);
+    fprintf(arquivo_txt, "\n[*] a %i %i %c\n", id_i, id_j, orientacao);
 
-    fprintf(arquivo_txt, "[*] a %i %i %c\n", id_i, id_j, orientacao);
-
-    lista *formas_a_remover = init_lista();
+    lista *formas_a_transformar = init_lista();
     node *head = get_head_node(formas);
-
 
     while (head != NULL) {
         forma *f = get_node_data(head);
         int id_forma = get_id_forma(f);
 
         if (id_forma >= id_i && id_forma <= id_j) {
-
             const char* tipo_nome[] = {"CÍRCULO", "RETÂNGULO", "LINHA", "TEXTO", "ANTEPARO"};
             fprintf(arquivo_txt, "Forma original: ID -> %i | Tipo -> %s\n", get_id_forma(f), tipo_nome[get_tipo_forma(f)]);
 
-            lista *anteparos_da_transformacao = forma_anteparo(f, orientacao);
+            lista *novos_anteparos = forma_anteparo(f, orientacao);
+            node *ant_node = get_head_node(novos_anteparos);
 
-            node *anteparo_node = get_head_node(anteparos_da_transformacao);
-            while (anteparo_node != NULL) {
-                forma *anteparo_forma = get_node_data(anteparo_node);
-                anteparo *a = get_dados_forma(anteparo_forma);
-                fprintf(arquivo_txt, "Segmento(s) produzidos pela forma de ID -> %i:\n", get_id_forma(f));
-                fprintf(arquivo_txt, "Segmento ID %d: (%.2f, %.2f) <-> (%.2f, %.2f)\n\n",
-                       get_id_forma(anteparo_forma), get_x_p0(a), get_y_p0(a), get_x_p1(a), get_y_p1(a));
+            while (ant_node != NULL) {
+                forma *ant_forma = get_node_data(ant_node);
+                anteparo *a = get_dados_forma(ant_forma);
+                fprintf(arquivo_txt, "ANTEPARO - ID -> %d: (%.2f, %.2f) <-> (%.2f, %.2f)\n",
+                       get_id_forma(ant_forma), get_x_p0(a), get_y_p0(a), get_x_p1(a), get_y_p1(a));
 
-
-                insert_tail(anteparos, anteparo_forma);
-                anteparo_node = go_next_node(anteparo_node);
-
+                insert_tail(anteparos, ant_forma);
+                ant_node = go_next_node(ant_node);
             }
-
-            insert_tail(formas_a_remover, f);
-            free_lista(anteparos_da_transformacao, NULL);
+            insert_tail(formas_a_transformar, f);
+            free_lista(novos_anteparos, NULL);
         }
-
         head = go_next_node(head);
     }
+    remover_formas_da_lista(formas, formas_a_transformar);
+    free_lista(formas_a_transformar, NULL);
+}
 
-    node *remover = get_head_node(formas_a_remover);
-    while (remover != NULL) {
-        forma *f = get_node_data(remover);
+/* --- Comando 'd' (Destruir) --- */
 
-        node *busca = get_head_node(formas);
-        int idx = 0;
-        while (busca != NULL) {
-            if (get_node_data(busca) == f) {
-                remove_index(formas, idx);
-                destrutor_forma(f);
-                break;
+static void processar_destruicao(lista *lista_alvo, poligono *vis, lista *destruidos, FILE *txt, bool eh_anteparo) {
+    node *head = get_head_node(lista_alvo);
+    while (head != NULL) {
+        forma *f = get_node_data(head);
+        if (get_id_forma(f) >= 0 && forma_sobrepoe_poligono(f, vis)) {
+            insert_tail(destruidos, f);
+            if (eh_anteparo) {
+                fprintf(txt, "Anteparo destruído - ID: %d\n", get_id_forma(f));
+            } else {
+                const char* tipo_nome[] = {"CÍRCULO", "RETÂNGULO", "LINHA", "TEXTO", "ANTEPARO"};
+                fprintf(txt, "Forma destruída - ID -> %i | Tipo -> %s\n", get_id_forma(f), tipo_nome[get_tipo_forma(f)]);
             }
-            busca = go_next_node(busca);
-            idx++;
         }
-
-        remover = go_next_node(remover);
+        head = go_next_node(head);
     }
-
-    free_lista(formas_a_remover, NULL);
 }
 
-/*
-Bomba de destruição é lançada na
-coordenada (x,y)
-TXT: reportar id e tipo das formas
-destruídas
-SVG: desenhar a região de vis da
-bomba. A região de vis deve ser
-desenhada em um novo arquivo cujo nome
-tem o sufixo sfx ou no próprio arquivo svg
-final, caso sfx seja “-”.
-*/
+static void comando_d(int threshold, char ordem, char *buffer, lista *formas, lista *anteparos, FILE *txt,
+                      const char *base_svg, const char *path_out, FILE *svg_final) {
+    double x, y; char sfx[64] = "-";
+    sscanf(buffer, "d %lf %lf %s", &x, &y, sfx);
+    fprintf(txt, "\n[*] d %.2lf %.2lf %s\n", x, y, sfx);
 
-static bool is_anteparo(void *dados) {
-    if (dados == NULL) return false;
-
-    forma *f = (forma*)dados;
-    return get_tipo_forma(f) == ANTEPARO;
-}
-
-static void comando_d(int threshold_i, char tipo_ord, char *buffer, lista *formas, lista *anteparos, FILE *arquivo_txt,
-    const char *path_base_svg, const char *path_saida, FILE *svg_final) {
-    double x_impacto, y_impacto;  char sfx[64] = "-";
-
-    sscanf(buffer, "d %lf %lf %s", &x_impacto, &y_impacto, sfx);
-
-    double raio_max = 10000.0;
-    ponto *bomba = init_ponto(x_impacto, y_impacto);
-    poligono *vis = calc_regiao_visibilidade(bomba, anteparos, tipo_ord, raio_max, threshold_i);
-
-    fprintf(arquivo_txt, "[*] d %.2lf %.2lf %s\n", x_impacto, y_impacto, sfx);
+    ponto *bomba = init_ponto(x, y);
+    poligono *vis = calc_regiao_visibilidade(bomba, anteparos, ordem, 10000.0, threshold);
 
     lista *formas_destruidas = init_lista();
-    node *head = get_head_node(formas);
-
-    while (head != NULL) {
-        forma *f = get_node_data(head);
-
-        if (forma_sobrepoe_poligono(f, vis)) {
-            insert_tail(formas_destruidas, f);
-
-            const char* tipo_nome[] = {"CÍRCULO", "RETÂNGULO", "LINHA", "TEXTO", "ANTEPARO"};
-            fprintf(arquivo_txt, "Forma destruída - ID -> %i | Tipo -> %s\n", get_id_forma(f), tipo_nome[get_tipo_forma(f)]);
-
-        }
-        head = go_next_node(head);
-    }
     lista *anteparos_destruidos = init_lista();
-    head = get_head_node(anteparos);
-    while (head != NULL) {
-        forma *f = get_node_data(head);
 
-        if (get_id_forma(f) >= 0 && forma_sobrepoe_poligono(f, vis)) {
-            insert_tail(anteparos_destruidos, f);
-            fprintf(arquivo_txt, "Anteparo destruído - ID: %d\n", get_id_forma(f));
-        }
-        head = go_next_node(head);
-    }
+    processar_destruicao(formas, vis, formas_destruidas, txt, false);
+    processar_destruicao(anteparos, vis, anteparos_destruidos, txt, true);
 
-    node *rem = get_head_node(anteparos_destruidos);
-    while (rem != NULL) {
-        remove_all_if(anteparos, (int(*)(void*))is_anteparo, (void(*)(void*))destrutor_forma);
-        rem = go_next_node(rem);
-    }
-    free_lista(anteparos_destruidos, NULL);
+    gerar_saida_visual(sfx, path_out, base_svg, x, y, vis, svg_final);
 
-
-    if (strcmp(sfx, "-") != 0) {
-        char path_svg[512];
-        sprintf(path_svg, "%s/%s-%s.svg", path_saida, path_base_svg, sfx);
-
-        FILE *svg_vis = inicializa_svg(path_svg);
-        if (svg_vis) {
-            insere_poligono_visibilidade(svg_vis, vis);
-            insere_bomba_svg(svg_vis, x_impacto, y_impacto);
-            insere_bounding_box(svg_vis, vis);
-            fecha_svg(svg_vis);
-        }
-    }
-
-    else {
-        if (svg_final != NULL) {
-            insere_poligono_visibilidade(svg_final, vis);
-            insere_bomba_svg(svg_final, x_impacto, y_impacto);
-            insere_bounding_box(svg_final, vis);
-        }
-    }
-
-
-    node *destruida = get_head_node(formas_destruidas);
-    while (destruida != NULL) {
-        forma *f = get_node_data(destruida);
-
-        node *busca = get_head_node(formas);
-        int idx = 0;
-        while (busca != NULL) {
-            if (get_node_data(busca) == f) {
-                remove_index(formas, idx);
-                destrutor_forma(f);
-                break;
-            }
-            busca = go_next_node(busca);
-            idx++;
-        }
-
-        destruida = go_next_node(destruida);
-    }
+    remover_formas_da_lista(formas, formas_destruidas);
+    remover_formas_da_lista(anteparos, anteparos_destruidos);
 
     free_lista(formas_destruidas, NULL);
+    free_lista(anteparos_destruidos, NULL);
     free_ponto(bomba);
     free_poligono(vis);
 }
 
-/*
-Bomba de pintura é lançada na coordenada
-(x,y). Formas dentro da região de
-vis tem suas cores de
-preenchimento e de borda pintadas com a
-cor cor.
-TXT: reportar id e tipo das formas pintadas
-SVG: semelhante ao comando d.
-*/
+/* --- Comando 'p' (Pintar) --- */
 
-static void comando_p(lista *formas, lista *anteparos, FILE *arquivo_txt, char *buffer,
-    int threshold_i, char tipo_ord, const char *path_saida, const char *path_base_svg, FILE *svg_final) {
-    double x_impacto, y_impacto; char sfx[64] = "-"; char cor[16] = "#FF0000";
+static void aplicar_pintura(lista *lista_alvo, poligono *vis, const char *cor, FILE *txt, bool eh_anteparo) {
+    node *head = get_head_node(lista_alvo);
 
-    sscanf(buffer, "p %lf %lf %s %s", &x_impacto, &y_impacto, cor, sfx);
-
-    ponto *bomba = init_ponto(x_impacto, y_impacto);
-    double raio_max = 10000.0;
-    poligono *vis = calc_regiao_visibilidade(bomba, anteparos, tipo_ord, raio_max, threshold_i);
-
-    node *head = get_head_node(formas);
-
-    fprintf(arquivo_txt, "[*] p %.2lf %.2lf %s %s\n", x_impacto, y_impacto, cor, sfx);
-    while (head != NULL) {
-        forma *f = get_node_data(head);
-        if (forma_sobrepoe_poligono(f, vis)) {
-            const char* tipo_nome[] = {"CÍRCULO", "RETÂNGULO", "LINHA", "TEXTO", "ANTEPARO"};
-            fprintf(arquivo_txt, "Forma pintada - ID -> %i | Tipo -> %s\n", get_id_forma(f), tipo_nome[get_tipo_forma(f)]);
-
-            set_corp_formas(f, cor);
-            set_corb_formas(f, cor);
-        }
-        head = go_next_node(head);
-    }
-
-    head = get_head_node(anteparos);
     while (head != NULL) {
         forma *f = get_node_data(head);
 
         if (forma_sobrepoe_poligono(f, vis)) {
-            fprintf(arquivo_txt, "Forma pintada - ID -> %d | Tipo -> ANTEPARO\n", get_id_forma(f));
+            if (eh_anteparo) {
+                fprintf(txt, "Forma pintada - ID -> %d | Tipo -> ANTEPARO\n", get_id_forma(f));
+                set_corb_formas(f, (char*)cor);
+            }
 
-            set_corb_formas(f, cor);
+            else {
+                const char* tipo_nome[] = {"CÍRCULO", "RETÂNGULO", "LINHA", "TEXTO", "ANTEPARO"};
+                fprintf(txt, "Forma pintada - ID -> %i | Tipo -> %s\n", get_id_forma(f), tipo_nome[get_tipo_forma(f)]);
+                set_corp_formas(f, (char*)cor);
+                set_corb_formas(f, (char*)cor);
+            }
         }
 
         head = go_next_node(head);
     }
+}
 
-    if (strcmp(sfx, "-") != 0) {
-        char path_svg[512];
-        sprintf(path_svg, "%s/%s-%s.svg", path_saida, path_base_svg, sfx);
+static void comando_p(lista *formas, lista *anteparos, FILE *txt, char *buffer,
+                      int threshold, char ordem, const char *path_out, const char *base_svg, FILE *svg_final) {
+    double x, y; char sfx[64] = "-"; char cor[16] = "#FF0000";
 
-        FILE *svg_vis = inicializa_svg(path_svg);
-        if (svg_vis) {
-            insere_poligono_visibilidade(svg_vis, vis);
-            insere_bomba_svg(svg_vis, x_impacto, y_impacto);
-            insere_bounding_box(svg_vis, vis);
-            fecha_svg(svg_vis);
-        }
-    }
+    sscanf(buffer, "p %lf %lf %s %s", &x, &y, cor, sfx);
+    fprintf(txt, "\n[*] p %.2lf %.2lf %s %s\n", x, y, cor, sfx);
 
-    else {
-        if (svg_final != NULL) {
-            insere_poligono_visibilidade(svg_final, vis);
-            insere_bomba_svg(svg_final, x_impacto, y_impacto);
-            insere_bounding_box(svg_final, vis);
+    ponto *bomba = init_ponto(x, y);
+    poligono *vis = calc_regiao_visibilidade(bomba, anteparos, ordem, 10000.0, threshold);
 
-        }
-    }
+    aplicar_pintura(formas, vis, cor, txt, false);
+    aplicar_pintura(anteparos, vis, cor, txt, true);
+
+    gerar_saida_visual(sfx, path_out, base_svg, x, y, vis, svg_final);
 
     free_ponto(bomba);
     free_poligono(vis);
 }
 
-/*
-Bomba de clonagem é lançada na
-coordenada (x,y). Os clones são trasladados
-em dx, dy (nos eixos x e y, respectivamente).
-Note que clones devem ter identificadores
-únicos.
-TXT. id e tipo das figuras originais e dos
-clones.
-SVG: semelhante ao comando d.
-*/
+/* --- Comando 'cln' (Clonar) --- */
 
-
-static void comando_cln(lista *formas, lista *anteparos, FILE *arquivo_txt,
-    int threshold_i, char tipo_ord, const char *path_saida, const char *path_base_svg, char *buffer, FILE *svg_final) {
-
-    double x_impacto, y_impacto, dx_translacao, dy_translacao; char sfx[64] = "-";
-
-    sscanf(buffer, "cln %lf %lf %lf %lf %s", &x_impacto, &y_impacto, &dx_translacao, &dy_translacao, sfx);
-
-    ponto *bomba = init_ponto(x_impacto, y_impacto);
-    double raio_max = 10000.0;
-
-    poligono *vis = calc_regiao_visibilidade(bomba, anteparos, tipo_ord, raio_max, threshold_i);
-
-    node *head = get_head_node(formas);
+static lista* criar_lista_clones(lista *lista_alvo, poligono *vis, double dx, double dy, FILE *txt) {
     lista *clones = init_lista();
-
-    fprintf(arquivo_txt, "[*] cln %.2lf %.2lf %.2lf %.2lf %s\n", x_impacto, y_impacto, dx_translacao, dy_translacao, sfx);
+    node *head = get_head_node(lista_alvo);
 
     while (head != NULL) {
         forma *f = get_node_data(head);
-
         if (forma_sobrepoe_poligono(f, vis)) {
             forma *clone = clona_forma(f);
 
             const char* tipo_nome[] = {"CÍRCULO", "RETÂNGULO", "LINHA", "TEXTO", "ANTEPARO"};
-            fprintf(arquivo_txt, "Forma original - ID -> %i | Tipo -> %s\n ", get_id_forma(f), tipo_nome[get_tipo_forma(f)]);
-            fprintf(arquivo_txt, "Forma clonada - ID -> %i | Tipo -> %s\n ", get_id_forma(clone), tipo_nome[get_tipo_forma(clone)]);
+            fprintf(txt, "Original - ID: %i | Tipo: %s\n", get_id_forma(f), tipo_nome[get_tipo_forma(f)]);
+            fprintf(txt, "Clone - ID: %i | Tipo: %s\n", get_id_forma(clone), tipo_nome[get_tipo_forma(clone)]);
 
-            set_posicao_forma(clone, get_x_forma(f) + dx_translacao, get_y_forma(f) + dy_translacao);
-
+            set_posicao_forma(clone, get_x_forma(f) + dx, get_y_forma(f) + dy);
             insert_tail(clones, clone);
         }
         head = go_next_node(head);
     }
+    return clones;
+}
 
+static void incorporar_clones(lista *lista_destino, lista *clones) {
     node *clone_node = get_head_node(clones);
     while (clone_node != NULL) {
         forma *clone = get_node_data(clone_node);
-        insert_tail(formas, clone);
+        insert_tail(lista_destino, clone);
         clone_node = go_next_node(clone_node);
     }
+}
 
-    if (strcmp(sfx, "-") != 0) {
-        char path_svg[512];
-        sprintf(path_svg, "%s/%s-%s.svg", path_saida, path_base_svg, sfx);
+static void comando_cln(lista *formas, lista *anteparos, FILE *txt,
+                        int threshold, char ordem, const char *path_out, const char *base_svg, char *buffer, FILE *svg_final) {
+    double x, y, dx, dy; char sfx[64] = "-";
 
-        FILE *svg_vis = inicializa_svg(path_svg);
-        if (svg_vis) {
-            insere_poligono_visibilidade(svg_vis, vis);
-            insere_bomba_svg(svg_vis, x_impacto, y_impacto);
-            insere_bounding_box(svg_vis, vis);
+    sscanf(buffer, "cln %lf %lf %lf %lf %s", &x, &y, &dx, &dy, sfx);
+    fprintf(txt, "\n[*] cln %.2lf %.2lf %.2lf %.2lf %s\n", x, y, dx, dy, sfx);
 
-            fecha_svg(svg_vis);
-        }
-    }
-    else {
-        if (svg_final != NULL) {
-            insere_poligono_visibilidade(svg_final, vis);
-            insere_bomba_svg(svg_final, x_impacto, y_impacto);
-            insere_bounding_box(svg_final, vis);
+    ponto *bomba = init_ponto(x, y);
+    poligono *vis = calc_regiao_visibilidade(bomba, anteparos, ordem, 10000.0, threshold);
 
-        }
-    }
+    lista *clones_formas = criar_lista_clones(formas, vis, dx, dy, txt);
+    lista *clones_anteparos = criar_lista_clones(anteparos, vis, dx, dy, txt);
 
-    free_lista(clones, NULL);
+    incorporar_clones(formas, clones_formas);
+    incorporar_clones(anteparos, clones_anteparos);
+
+    gerar_saida_visual(sfx, path_out, base_svg, x, y, vis, svg_final);
+
+    free_lista(clones_formas, NULL);
+    free_lista(clones_anteparos, NULL);
     free_ponto(bomba);
     free_poligono(vis);
 }
 
+/* --- Função Principal do Parser --- */
+
 void parser_qry(lista *formas, lista *anteparos, char *nome_path_qry, char *nome_path_txt,
-    int threshold_i, char tipo_ord, const char *path_saida, const char *path_base_svg, FILE *svg_final) {
+                int threshold_i, char tipo_ord, const char *path_saida, const char *path_base_svg, FILE *svg_final) {
 
     FILE *arquivo_qry = fopen(nome_path_qry, "r");
-    if (arquivo_qry == NULL) {
-        printf("ERRO: Erro ao abrir o arquivo .qry!\n");
-        return;
-    }
+    if (!arquivo_qry) { printf("ERRO: Falha ao abrir .qry\n"); return; }
 
     FILE *arquivo_txt = fopen(nome_path_txt, "w");
-    if (arquivo_txt == NULL) {
-        printf("ERRO: Erro ao abrir o arquivo .txt!\n");
-        return;
-    }
+    if (!arquivo_txt) { printf("ERRO: Falha ao criar .txt\n"); fclose(arquivo_qry); return; }
 
-    char comando[COMANDO_SIZE];
-    char buffer[BUFFER_SIZE];
+    char buffer[BUFFER_SIZE], comando[COMANDO_SIZE];
 
     while (fgets(buffer, sizeof(buffer), arquivo_qry)) {
         sscanf(buffer, "%s", comando);
 
         if (strcmp(comando, "a") == 0) {
             comando_a(buffer, formas, anteparos, arquivo_txt);
-        }
-        else if (strcmp(comando, "d") == 0) {
-            comando_d(threshold_i, tipo_ord, buffer, formas, anteparos,
-                     arquivo_txt, path_base_svg, path_saida, svg_final);
-
-        }
-        else if (strcmp(comando, "p") == 0) {
-            comando_p(formas, anteparos, arquivo_txt, buffer, threshold_i,
-                     tipo_ord, path_saida, path_base_svg, svg_final);
-        }
-        else if (strcmp(comando, "cln") == 0) {
-            comando_cln(formas, anteparos, arquivo_txt, threshold_i, tipo_ord,
-                       path_saida, path_base_svg, buffer, svg_final);
-
+        } else if (strcmp(comando, "d") == 0) {
+            comando_d(threshold_i, tipo_ord, buffer, formas, anteparos, arquivo_txt, path_base_svg, path_saida, svg_final);
+        } else if (strcmp(comando, "p") == 0) {
+            comando_p(formas, anteparos, arquivo_txt, buffer, threshold_i, tipo_ord, path_saida, path_base_svg, svg_final);
+        } else if (strcmp(comando, "cln") == 0) {
+            comando_cln(formas, anteparos, arquivo_txt, threshold_i, tipo_ord, path_saida, path_base_svg, buffer, svg_final);
         }
     }
 
     fclose(arquivo_qry);
     fclose(arquivo_txt);
-
 }
