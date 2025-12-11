@@ -69,8 +69,8 @@ static void free_segmento_ativo(void *data) {
 
 // Função que valida os pontos do polígono
 // (verifica se deve ser adicionado ao polígono de visibilidade)
-static bool validar_ponto(ponto *p, ponto *bomba) {
-    if (p == NULL || bomba == NULL) return false;
+static bool validar_ponto(ponto *p) {
+    if (p == NULL) return false;
 
     double x = get_x_ponto(p);
     double y = get_y_ponto(p);
@@ -148,7 +148,7 @@ static void update_evento_arvore(arvore *seg_ativo, evento *e) {
 static void capturar_ponto_visibilidade(poligono *vis, arvore *seg_ativos, ponto *bomba, double angulo, double raio_max) {
     ponto *p = raio_ate_anteparo_avl(seg_ativos, bomba, angulo, raio_max);
     if (p != NULL) {
-        if (validar_ponto(p, bomba)) {
+        if (validar_ponto(p)) {
             ponto *ultimo = get_ultimo_vertice(vis);
             if (!ultimo || dist_pontos(p, bomba)) {
                 insert_ponto_poligono(vis, p);
@@ -250,6 +250,7 @@ poligono *calc_regiao_visibilidade(ponto *bomba, lista *anteparos, char tipo_ord
 
     int num_eventos = 0;
     evento *eventos = preparar_segmentos(bomba, anteparos, &num_eventos);
+    if (eventos == NULL) return NULL;
 
     // 2. CASO SEM NENHUM ANTEPARO -> SIMPLESMENTE CRIA UM CÍRCULO QUE ABRANGE A ÁREA TODA
     if (num_eventos == 0) {
@@ -308,7 +309,6 @@ poligono *calc_regiao_visibilidade(ponto *bomba, lista *anteparos, char tipo_ord
     free(eventos);
     free_arvore(seg_ativos);
 
-    // 7. CALCULA A BOUNDING BOX DO POLÍGONO PARA OTIMIZAÇÃO DO ALGORITMO DE CÁLCULO DE SOBREPOSIÇÃO
     if (get_num_vertices(visibilidade) > 0) {
         calcular_bounding_box(visibilidade);
     }
