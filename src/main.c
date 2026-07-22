@@ -10,6 +10,8 @@
 
 #define PATH_SIZE 520
 
+static void print_help();
+
 static void monta_caminho(char* path_completo, const char* base_dir, const char* nome_arquivo) {
     if (base_dir != NULL && strlen(base_dir) > 0) {
         sprintf(path_completo, "%s/%s", base_dir, nome_arquivo);
@@ -53,13 +55,15 @@ int main(int argc, char *argv[]) {
         } else if (strcmp(argv[i], "-to") == 0 && i + 1 < argc) {
             char *tipo = argv[++i];
             tipo_ord = tipo[0];
+        } else if (strcmp(argv[i], "-h") == 0 || strcmp(argv[i], "--help") == 0) {
+            print_help();
+            return 0;
         }
     }
 
     // --- 2. Checagem de parâmetros obrigatórios ---
     if (path_geo == NULL) {
         fprintf(stderr, "ERRO: Parâmetro obrigatório -f <arquivo.geo> não fornecido!\n");
-        fprintf(stderr, "Uso: %s -f <arquivo.geo> -o <dir_saida> [-e <dir_entrada>] [-q <arquivo.qry>] [-to q|m] [-i <threshold>]\n", argv[0]);
         return 1;
     }
 
@@ -143,4 +147,18 @@ int main(int argc, char *argv[]) {
 
     printf("Execução concluída com sucesso!\n");
     return 0;
+}
+
+static void print_help() {
+    printf("Uso: ted [OPÇÕES]\n\n");
+    printf("Opções:\n");
+    printf("  -f <arquivo.geo>   (obrigatório) Arquivo com as formas geométricas\n");
+    printf("  -o <dir>           (obrigatório) Diretório de saída\n");
+    printf("  -e <dir>           (opcional)    Diretório base dos testes\n");
+    printf("  -q <arquivo.qry>   (opcional)    Arquivo de consultas\n");
+    printf("  -to <[q | m]>      (opcional)    Define o algoritmo de ordenação utilizado. Default: Quick Sort\n");
+    printf("  -i <threshold>     (opcional)    Define a partir de quantos elementos o Insertion Sort será utilizado\n");
+    printf("  -h, --help                       Exibe esta mensagem\n\n");
+    printf("Exemplo:\n");
+    printf("  ted -e entrada/ -f formas.geo -q consultas.qry -o saida/ -i 10 -to m\n");
 }

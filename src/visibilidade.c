@@ -280,7 +280,7 @@ poligono *calc_regiao_visibilidade(ponto *bomba, lista *anteparos, char tipo_ord
     }
 
     // 5. SWEEP LINE
-    printf("Iniciando algoritmo de sweep line...\n");
+    printf("Iniciando algoritmo de sweep line...\n\n");
     for (int i = 0; i < num_eventos; i++) {
         evento *atual = &eventos[i];
         bool ja_processado_no_inicio = (atual->tipo == INICIO && atual -> angulo < EPSILON_ANGULAR);
