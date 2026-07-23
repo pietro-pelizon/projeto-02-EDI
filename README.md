@@ -42,6 +42,12 @@ O sistema lê arquivos de entrada (`.geo` e `.qry`) para configurar o ambiente e
 * **Algoritmos de Ordenação:** Implementação flexível utilizando `qsort` ou `Merge Sort` customizado, com transição para `Insertion Sort` em subvetores pequenos.
 * **Saída Gráfica e Geração de Relatórios:** Geração de arquivos (`.svg`) detalhando a posição final dos objetos e a área de impactos das bombas, além de relatórios (`.txt`) contendo os dados dos eventos.
 
+## Pré-requisitos
+Certifique-se de ter as seguintes ferramentas instaladas no seu ambiente:
+* Compilador **GCC** (com suporte ao padrão C99)
+* **Make** (para automação da build)
+* Ambiente **Linux** ou **WSL** (Windows Subsystem for Linux)
+
 ## Compilação
 
 O projeto inclui um `Makefile` para facilitar a compilação. Certifique-se de ter o `gcc` e o `make` instalados.
